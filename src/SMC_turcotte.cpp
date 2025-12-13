@@ -160,7 +160,18 @@ using namespace Rcpp;
       if(j>0){
         B_last_max = max(B_last) ;
       }
-      else{B_last_max = max(T_seg) ;}
+      else{
+        // Check if T_seg is non-empty before calling max()
+        // T_seg can be empty even if observations exist in [start_point, end_point)
+        // because T_seg uses a different range [B_last_min, end_point)
+        if(T_seg.size() > 0){
+          B_last_max = max(T_seg) ;
+        } else {
+          // If T_seg is empty, use end_point as fallback
+          // This can happen when B_last_min > all observations in the interval
+          B_last_max = end_point ;
+        }
+      }
 
       //perform RJMCMC
 

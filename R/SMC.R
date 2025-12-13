@@ -203,16 +203,20 @@
 
       if(sum_na>0){stop("SMC.R-->there are NA, checkout")}
 
-      saveRDS(UI_bounds, file =paste0(settings$dir,"UI_bounds.rds"))
-      saveRDS(n_particle, file =paste0(settings$dir,"n_particle.rds"))
-      saveRDS(out_SMC_cpp$storage_B, file =paste0(settings$dir,"out_SMC_cpp$storage_B.rds"))
-      saveRDS(out_SMC_cpp$storage_V, file =paste0(settings$dir,"out_SMC_cpp$storage_V.rds"))
-      saveRDS(out_SMC_cpp$storage_Z, file =paste0(settings$dir,"out_SMC_cpp$storage_Z.rds"))
-      saveRDS(out_SMC_cpp$storage_Q, file =paste0(settings$dir,"out_SMC_cpp$storage_Q.rds"))
-      saveRDS(out_SMC_cpp$storage_F, file =paste0(settings$dir,"out_SMC_cpp$storage_F.rds"))
-      saveRDS(U, file =paste0(settings$dir,"U.rds"))
-      saveRDS(W, file =paste0(settings$dir,"W.rds"))
-      saveRDS(K, file =paste0(settings$dir,"K.rds"))
+      # Save debug data only if settings$dir is provided
+      # These are temporary debugging files and should be optional
+      if(!is.null(settings$dir) && settings$dir != ""){
+        saveRDS(UI_bounds, file =paste0(settings$dir,"UI_bounds.rds"))
+        saveRDS(n_particle, file =paste0(settings$dir,"n_particle.rds"))
+        saveRDS(out_SMC_cpp$storage_B, file =paste0(settings$dir,"out_SMC_cpp$storage_B.rds"))
+        saveRDS(out_SMC_cpp$storage_V, file =paste0(settings$dir,"out_SMC_cpp$storage_V.rds"))
+        saveRDS(out_SMC_cpp$storage_Z, file =paste0(settings$dir,"out_SMC_cpp$storage_Z.rds"))
+        saveRDS(out_SMC_cpp$storage_Q, file =paste0(settings$dir,"out_SMC_cpp$storage_Q.rds"))
+        saveRDS(out_SMC_cpp$storage_F, file =paste0(settings$dir,"out_SMC_cpp$storage_F.rds"))
+        saveRDS(U, file =paste0(settings$dir,"U.rds"))
+        saveRDS(W, file =paste0(settings$dir,"W.rds"))
+        saveRDS(K, file =paste0(settings$dir,"K.rds"))
+      }
 
       results_UI <- get_results(UI_bounds[i],
                                 UI_bounds[i+1],

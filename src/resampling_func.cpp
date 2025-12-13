@@ -70,7 +70,24 @@ List resampling_func(const NumericVector& weight_vec,
 
      previous_sum_w = current_sum_w ;
      current_particle = current_particle + 1 ;
-     current_sum_w = sum_weight_vec[current_particle] ;
+     
+     // Bounds check: prevent array out-of-bounds access
+     if (current_particle >= n_particle) {
+       // If we've exceeded particle bounds, use the last particle for all remaining slots
+       // This can happen due to numerical precision issues where cumulative weights
+       // don't exactly reach 1.0
+       current_particle = n_particle - 1;
+       current_sum_w = sum_weight_vec[current_particle];
+       
+       // Assign last particle to all remaining unassigned slots
+       while (current_u < n_particle) {
+         new_index_vec[current_u] = current_particle;
+         current_u = current_u + 1;
+       }
+       break; // Exit the main loop since all slots are assigned
+     } else {
+       current_sum_w = sum_weight_vec[current_particle] ;
+     }
 
    }
   }
