@@ -6,7 +6,7 @@
 using namespace Rcpp;
 
 // [[Rcpp::depends(BH)]]
-// [[Rcpp::plugins(cpp11)]]
+// [[Rcpp::plugins(cpp14)]]
 
 //' @title Function for approximating the log probability of observing "n" obs in semi-segment [tau0,split_U) given
 //' the total length [tau0,tau1)

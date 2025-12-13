@@ -214,7 +214,7 @@ NumericVector initial_breakpoints(  const NumericVector& T_seg_orig,
 
     return Bvec1_final ;
 
-  }else if((T_seg.size()>0)  & (T_seg.size() < minimum_n)){
+  }else if((T_seg.size()>0)  && (T_seg.size() < minimum_n)){
 
     //if less than minimum_n (but more than 0), create only 1 segment
 
