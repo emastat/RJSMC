@@ -1,0 +1,33 @@
+Package: RJSMC
+Title: Sequential Monte Carlo with Reversible-Jump for inference about multiple changepoint model
+Version: 1.0
+Authors@R: 
+    person(given = "Emanuele",
+           family = "Gramuglia",
+           role = c("aut", "cre"),
+           email = "emanuele.gramuglia@kantega.no",
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: This package performis on-line inference for learning changepoints and state values 
+             of Marked non-Honogenous Poisson Process. The Algorithm used for approximating the target
+             distribution is the Squential Monte Carlo. Furthermore, due to that the importnat density
+              cannot be directly used for proposing new values, Reversible Jump MCMC iterations
+             are perfomed from obtaining samples from it.
+License: GPL (>= 3)
+SystemRequirements: C++11
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+LinkingTo: 
+    Rcpp,
+    RcppArmadillo,
+    BH
+Imports: 
+    Rcpp (>= 1.0.5),
+    tidyverse,
+    tidyr,
+    dplyr,
+    ggplot2,
+    extraDistr,
+Depends: 
+    R (>= 2.10)
