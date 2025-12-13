@@ -4,14 +4,14 @@
 using namespace Rcpp;
 
 
-List     RJMCMC_SMC(const NumericVector& T_seg,
+void     RJMCMC_SMC(const NumericVector& T_seg,
                     const IntegerVector& Y_seg,
                     const int& U,
                     const int& K,
                     const int& W,
                     const double& start_point,
                     const double& end_point,
-                    double& t_star,
+                    const double& t_star,
                     const int& num_logs,
                     const NumericMatrix& lambdamat,
                     const NumericVector& keyvec,
@@ -42,6 +42,7 @@ List     RJMCMC_SMC(const NumericVector& T_seg,
                     List& container_Q,
                     List& container_F,
                     IntegerVector& Svec,
-                    NumericVector& weight_vec);
+                    NumericVector& weight_vec,
+                    const bool& empty_seg);
 
 #endif

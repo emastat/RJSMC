@@ -26,7 +26,7 @@ NumericVector extract_index(const NumericVector& x,
 
    int x_length = x.size() ;
 
-  while(x[i] <= lower & i < x_length) i = i + 1;
+  while((x[i] <= lower) & (i < x_length)) i = i + 1;
 
   int j = i;
 
@@ -34,7 +34,7 @@ NumericVector extract_index(const NumericVector& x,
 
  if(j<x_length){
 
-    while(x[j] < upper  & j < x_length ) j = j + 1;
+    while((x[j] < upper)  & (j < x_length) ) j = j + 1;
 
   j=j-1 ;
 

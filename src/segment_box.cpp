@@ -104,7 +104,7 @@ List        segment_box(const NumericVector& T_seg,
 
   if(count>0){
 
-    if(open_segment==false & count<minimum_n){
+    if((open_segment==false) & (count<minimum_n)){
 
       stop("a closed segment must have at least minimum_n observations");
 

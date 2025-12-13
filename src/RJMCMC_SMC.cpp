@@ -4,6 +4,9 @@
 #include "backward_function.hpp"
 #include "shift_function.hpp"
 #include "incremental_weight.hpp"
+#include "weigths_correction.hpp"
+#include "extract_index.hpp"
+#include "toolbox2.hpp"
 
 using namespace Rcpp;
 
@@ -48,6 +51,7 @@ using namespace Rcpp;
 //' @param container_F  List for with Fvec generated inside the current Update Interval, for each particle
 //' @param Svec vector with number of segment in each particle
 //' @param weight_vec vector with the current normalized weight for each particle
+//' @param empty_seg (Logical) if true then the importance density for empty segments is used
 //' @return The function does not explicitly return any object: However, by reference 9 element are updated:
 //' \describe{
 //' \item{container_B}{List for with Bvec generated inside the current Update Interval, for each particle}
@@ -62,14 +66,14 @@ using namespace Rcpp;
 //' }
 //' @export
 // [[Rcpp::export]]
-List     RJMCMC_SMC(const NumericVector& T_seg,
+void     RJMCMC_SMC(const NumericVector& T_seg,
                     const IntegerVector& Y_seg,
                     const int& U,
                     const int& K,
                     const int& W,
                     const double& start_point,
                     const double& end_point,
-                          double& t_star,
+                    const double& t_star,
                     const int& num_logs,
                     const NumericMatrix& lambdamat,
                     const NumericVector& keyvec,
@@ -100,7 +104,8 @@ List     RJMCMC_SMC(const NumericVector& T_seg,
                           List& container_Q,
                           List& container_F,
                           IntegerVector& Svec,
-                          NumericVector& weight_vec){
+                          NumericVector& weight_vec,
+                    const bool& empty_seg){
 
 
   //open_segment: true if in a RJMCMC iteration only 1 segment is generated (S=1), false otherwise
@@ -164,7 +169,6 @@ List     RJMCMC_SMC(const NumericVector& T_seg,
 
     IntegerVector Fvec = out_iteration_0["Fvec"];
 
-
     int S_s ;
 
     IntegerVector urn = seq(1,3)  ;
@@ -182,7 +186,7 @@ List     RJMCMC_SMC(const NumericVector& T_seg,
 
       open_segment = false ;
 
-      if(S>=2 & S<Smax){  S_s = as<int>( Rcpp::sample(urn, 1,false,jump_probs ) ) ;
+      if((S>=2) & (S<Smax)){  S_s = as<int>( Rcpp::sample(urn, 1,false,jump_probs ) ) ;
 
       }else if(S==Smax ){  S_s = 1 ;
 
@@ -221,6 +225,17 @@ List     RJMCMC_SMC(const NumericVector& T_seg,
                           start_point,
                           end_point);
 
+        /// to remove
+        // NumericVector out_extract_forward =clone( extract_index(T_seg,Bvec[0],Bvec[1])) ;
+        //
+        // double count_forward = out_extract_forward[0] ;
+        //
+        // if((count_forward>0) & (count_forward<minimum_n)){
+        //
+        //   stop("count_forward as >0 and <minimum_n") ;
+        // }
+        // end remove
+
       }else if(S_s==1){
 
          backward_function(S,
@@ -252,6 +267,17 @@ List     RJMCMC_SMC(const NumericVector& T_seg,
                           minimum_n,
                           start_point,
                           end_point);
+
+        /// to remove
+        NumericVector out_extract_backward =clone( extract_index(T_seg,Bvec[0],Bvec[1])) ;
+
+        double count_backward = out_extract_backward[0] ;
+
+        if((count_backward>0) & (count_backward<minimum_n)){
+
+          stop("count_backward as >0 and <minimum_n") ;
+        }
+        // end remove
 
       }else{
 
@@ -286,6 +312,17 @@ List     RJMCMC_SMC(const NumericVector& T_seg,
                            start_point,
                            end_point);
 
+        /// to remove
+        NumericVector out_extract_shift =clone( extract_index(T_seg,Bvec[0],Bvec[1])) ;
+
+        double count_shift = out_extract_shift[0] ;
+
+        if((count_shift>0) & (count_shift<minimum_n)){
+
+          stop("count_shift as >0 and <minimum_n") ;
+        }
+        // end remove
+
        }
 
 
@@ -303,7 +340,7 @@ List     RJMCMC_SMC(const NumericVector& T_seg,
 
         if( (i % thinning ==0 ) & (particle_count>0)  ){
 
-          //select the index of the particle to update
+          //select the index of the particles to update
 
           index = particle_index_vec_local[particle_index] ;
 
@@ -312,7 +349,7 @@ List     RJMCMC_SMC(const NumericVector& T_seg,
 
           if(S==1){open_segment = true ; }
 
-          // out_weight: log incremental weight for the selected particle
+          // out_weight: the log incremental weight for the selected particle
 
           double out_weight = incremental_weight(T_seg,
                                                  Y_seg,
@@ -344,8 +381,78 @@ List     RJMCMC_SMC(const NumericVector& T_seg,
                                                  end_point,
                                                  open_segment);
 
+          // START CODE TO REMOVE
+          if(NumericVector::is_na(weight_vec[index])){
 
+            stop("RJMCMC_SMC.cpp. weight_vec[index] is na. probably from before");
+
+          }
+
+          if(Rcpp::traits::is_nan<REALSXP>(weight_vec[index])){
+
+            stop("RJMCMC_SMC.cpp. weight_vec[index] is NaN. probably from before");
+
+          }
+
+          if(Rcpp::traits::is_infinite<REALSXP>(weight_vec[index])){
+
+            stop("RJMCMC_SMC.cpp. weight_vec[index] is infinite. probably from before");
+
+          }
+          // END CODE TO REMOVE
+
+          // START CODE TO REMOVE
+          if(NumericVector::is_na(out_weight)){
+
+            stop("RJMCMC_SMC.cpp. out_weight is na");
+
+          }
+
+          if(Rcpp::traits::is_nan<REALSXP>(out_weight)){
+
+            stop("RJMCMC_SMC.cpp. out_weight is NaN");
+
+          }
+
+          if(Rcpp::traits::is_infinite<REALSXP>(out_weight)){
+
+            stop("RJMCMC_SMC.cpp. out_weight is infinite");
+
+          }
+          // END CODE TO REMOVE
+
+          double old_weight = weight_vec[index] ;
           weight_vec[index] = weight_vec[index] * std::exp(out_weight) ;
+
+
+          // START CODE TO REMOVE
+          if(NumericVector::is_na(weight_vec[index])){
+
+            Rcout << "this is weight_vec[index]   " << weight_vec[index] ;
+            stop("RJMCMC_SMC.cpp. weight_vec[index] is na");
+
+          }
+
+          if(Rcpp::traits::is_nan<REALSXP>(weight_vec[index])){
+
+            Rcout << "this is weight_vec[index]   " << weight_vec[index] ;
+
+            stop("RJMCMC_SMC.cpp. weight_vec[index] is NaN");
+
+          }
+
+          if(Rcpp::traits::is_infinite<REALSXP>(weight_vec[index])){
+
+            Rcout << "this is weight_vec[index]   " << weight_vec[index] << "\n" ;
+            Rcout << "this is old_weight   " << old_weight << "\n" ;
+            Rcout << "this is out_weight   " << out_weight << "\n" ;
+            Rcout << "this is std::exp(out_weight)   " << std::exp(out_weight) << "\n" ;
+
+            stop("RJMCMC_SMC.cpp. weight_vec[index] is infinite");
+
+          }
+          // END CODE TO REMOVE
+
 
           //store the new particles
 
@@ -357,6 +464,8 @@ List     RJMCMC_SMC(const NumericVector& T_seg,
           IntegerVector Qvec_final(S) ;
           IntegerVector Fvec_final(S) ;
 
+          // Bvec_final has the last breakpoint observed inside the previous Update Interval + all
+          // sampled breakpoints inside the current  Update Interval
           Bvec_final[0] = B_last[index] ;
           Vvec_final[0] = Vvec[0] ;
           Zvec_final[0] = Zvec[0] ;
@@ -414,20 +523,86 @@ List     RJMCMC_SMC(const NumericVector& T_seg,
 
     if(particle_count >0){
 
-      Rcout<< "MCMC failed, try to increase n_ite parameter " << "\n" ;
+      Rcout<< "MCMC did not update all the particles, please increase n_ite parameter " << "\n" ;
 
     }
 
-    //end of the function
+    // calling the R function breakpoints_sampling
+    Function breakpoints_sampling("breakpoints_sampling");
 
-    return (List::create(
-        Named("container_B")=container_B,
-        Named("container_V")=container_V,
-        Named("container_Z")=container_Z,
-        Named("container_Q")=container_Q,
-        Named("container_F")=container_F,
-        Named("weight_vec")= weight_vec
-    ));
+    // select Breakpoints vector only for the particles updated in this routine
+
+    List selected_breakpoint_vector = container_B[particle_index_vec] ;
+
+    // START CODE TO DELETE
+    for ( int j=0; j<selected_breakpoint_vector.length();j++){
+
+      NumericVector x = selected_breakpoint_vector[j];
+
+      for (int i = 0; i < x.size(); i++) {
+        if (NumericVector::is_na(x[i])) {
+          stop("RJSMCMC_SMC.cpp --> NaN value detected in the vector.");
+        }
+      }
+    }
+    //END CODE TO DELETE
+
+    int sample_size = 5 ;
+
+    List generated_breakpoint_list = breakpoints_sampling(Named("start_point") = t_star,
+                         Named("end_point") = end_point,
+                         Named("breakpoint_list") = selected_breakpoint_vector,
+                         Named("sample_size") = sample_size) ;
+
+    // compute correction weight
+    double weigths_corr_value = weigths_correction(
+                       T_seg,
+                       generated_breakpoint_list,
+                       sample_size,
+                       K,
+                       keyvec,
+                       etavec,
+                       key0vec,
+                       eta0vec,
+                       probvec_Z,
+                       probvec_F,
+                       P0) ;
+
+    // correct weights for the particles updated in this routine
+
+    double index_value ;
+
+    for(int i=0 ; i<particle_index_vec.length(); i++){
+
+      index_value = particle_index_vec[i] ;
+
+      weight_vec[index_value] = weight_vec[index_value] * std::exp(weigths_corr_value);
+
+      if(NumericVector::is_na(weigths_corr_value)){
+
+        saveRObject(T_seg, "/Users/emanueleuio/Desktop/inspect_results/T_seg.rds");
+        saveRObject(generated_breakpoint_list, "/Users/emanueleuio/Desktop/inspect_results/generated_breakpoint_list.rds");
+
+        Rcout << "this is sample size"<< sample_size <<"\n" ;
+        Rcout << "this is  K"<< K <<"\n" ;
+
+        stop("RJMCMC_SMC.cpp. weigths_corr_value is na");
+
+      }
+
+      if(Rcpp::traits::is_nan<REALSXP>(weigths_corr_value)){
+
+        stop("RJMCMC_SMC.cpp. weigths_corr_value is NaN");
+
+      }
+
+      if(Rcpp::traits::is_infinite<REALSXP>(weigths_corr_value)){
+
+        stop("RJMCMC_SMC.cpp. weigths_corr_value is infinite");
+
+      }
+
+    }
 
 }
 

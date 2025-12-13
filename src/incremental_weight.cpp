@@ -7,7 +7,6 @@
 using namespace Rcpp ;
 
 //' @title Incremental_weight
-//'
 //' Function for computing the log incremental weight for a particle
 //' @param T_seg Vector with time stamps within the update interval
 //' @param Y_seg Vector with the messages within the update interval
@@ -127,19 +126,19 @@ double incremental_weight(const NumericVector& T_seg,
     if(open_segment==false){
 
       //if(count_target<minimum_n){
-      if(count_target>0 & count_target<minimum_n){
-
-        Rcout << "count_target: " << count_target << "\n" ;
-        Rcout << "T_seg " << T_seg << "\n" ;
-        Rcout << "B_last " << B_last << "\n" ;
-        Rcout << "B1 " << B1 << "\n" ;
-        Rcout << "t_star " << t_star << "\n" ;
-        Rcout << "endpoint " << end_point << "\n" ;
-        //count_target = minimum_n;
-
-        stop("cannot be N<minimum_n in a closed segmnet:incremental_weight");
-
-        }
+      // if((count_target>0) & (count_target<minimum_n)){
+      //
+      //   Rcout << "count_target: " << count_target << "\n" ;
+      //   Rcout << "T_seg " << T_seg << "\n" ;
+      //   Rcout << "B_last " << B_last << "\n" ;
+      //   Rcout << "B1 " << B1 << "\n" ;
+      //   Rcout << "t_star " << t_star << "\n" ;
+      //   Rcout << "endpoint " << end_point << "\n" ;
+      //   //count_target = minimum_n;
+      //
+      //   //stop("cannot be N<minimum_n in a closed segmnet:incremental_weight");
+      //
+      //   }
 
       // density for number of observation inside the closed segment
       ldens_count_target = R::dnbinom(count_target-minimum_n,
@@ -159,7 +158,7 @@ double incremental_weight(const NumericVector& T_seg,
      //                                 B1,
      //                                  0.0001);
 
-      ldens_count_target = R::dnbinom(count_target-minimum_n,
+      ldens_count_target = R::dnbinom(0,
                                       alphavec[Q-1],
                                               (alphavec[Q-1]/muvec[Q-1])/(alphavec[Q-1]/muvec[Q-1]+ L_target),
                                               true) ;
@@ -269,49 +268,54 @@ double incremental_weight(const NumericVector& T_seg,
 
   }
 
+  // initialize output variable
+  double out = 0.000001;
 
-  double out = ldens_tmsp_target - ldens_tmsp_importance
-             + ldens_count_target - ldens_count_importance
-             + ldens_event_target - ldens_event_importance
-             + ldens_dynamics_target - ldens_dynamics_importance
-             + ldens_empty_target - ldens_empty_importance
-             + ldens_L_target - ldens_L_importance ;
+  if((count_target>0) & (count_target<minimum_n) & (open_segment==false)){
 
+    return out;
 
-  if(R_isnancpp(out)){
-    Rcout << "ldens_tmsp_target: " << ldens_tmsp_target << "\n" ;
-    Rcout << "ldens_tmsp_importance: " << ldens_tmsp_importance << "\n" ;
-    Rcout << "ldens_count_target: " << ldens_count_target << "\n" ;
-    Rcout << "ldens_count_importance: " << ldens_count_importance << "\n" ;
-    Rcout << "ldens_event_target: " << ldens_event_target << "\n" ;
-    Rcout << "ldens_event_importance: " << ldens_event_importance << "\n" ;
-    Rcout << "ldens_dynamics_target: " << ldens_dynamics_target << "\n" ;
-    Rcout << "ldens_dynamics_importance: " << ldens_dynamics_importance << "\n" ;
-    Rcout << "ldens_empty_target: " << ldens_empty_target << "\n" ;
-    Rcout << "ldens_empty_importance: " << ldens_empty_importance << "\n" ;
-    Rcout << "ldens_L_target: " << ldens_L_target << "\n" ;
-    Rcout << "ldens_L_importance: " << ldens_L_importance << "\n" ;
-    Rcout << "count_target: " << count_target << "\n" ;
-    Rcout << "count_importance: " << count_importance << "\n" ;
-    Rcout << "F:  " << F << "\n" ;
-    Rcout << "B1: : " << B1 << "\n" ;
-    Rcout << "B_last: : " << B_last << "\n" ;
-    Rcout << "t_star: " << t_star << "\n" ;
+  }else{
+
+    out = ldens_tmsp_target - ldens_tmsp_importance
+               + ldens_count_target - ldens_count_importance
+               + ldens_event_target - ldens_event_importance
+               + ldens_dynamics_target - ldens_dynamics_importance
+               + ldens_empty_target - ldens_empty_importance
+               + ldens_L_target - ldens_L_importance ;
+
+    if(out>700){out = 700;}
 
 
+    // START CODE TO DELETE
+    if(R_isnancpp(out) || Rcpp::traits::is_infinite<REALSXP>(std::exp(out))){
+      Rcout << "ldens_tmsp_target: " << ldens_tmsp_target << "\n" ;
+      Rcout << "ldens_tmsp_importance: " << ldens_tmsp_importance << "\n" ;
+      Rcout << "ldens_count_target: " << ldens_count_target << "\n" ;
+      Rcout << "ldens_count_importance: " << ldens_count_importance << "\n" ;
+      Rcout << "ldens_event_target: " << ldens_event_target << "\n" ;
+      Rcout << "ldens_event_importance: " << ldens_event_importance << "\n" ;
+      Rcout << "ldens_dynamics_target: " << ldens_dynamics_target << "\n" ;
+      Rcout << "ldens_dynamics_importance: " << ldens_dynamics_importance << "\n" ;
+      Rcout << "ldens_empty_target: " << ldens_empty_target << "\n" ;
+      Rcout << "ldens_empty_importance: " << ldens_empty_importance << "\n" ;
+      Rcout << "ldens_L_target: " << ldens_L_target << "\n" ;
+      Rcout << "ldens_L_importance: " << ldens_L_importance << "\n" ;
+      Rcout << "count_target: " << count_target << "\n" ;
+      Rcout << "count_importance: " << count_importance << "\n" ;
+      Rcout << "F:  " << F << "\n" ;
+      Rcout << "B1: : " << B1 << "\n" ;
+      Rcout << "B_last: : " << B_last << "\n" ;
+      Rcout << "t_star: " << t_star << "\n" ;
+      Rcout << "out: " << out << "\n" ;
 
-    stop("the weight is Nan: incremental_weigth");
+      stop("incremental_weigth.cpp--> the weight is Nan: ");
 
+      }
+    // START CODE TO DELETE
 
-    }
-
-  //Rcout << "out: " << out << "\n" ;
-
-
-
-
-  return out ;
-
+    return out ;
+  }
 
   // end of the function
 }

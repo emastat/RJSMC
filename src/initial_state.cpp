@@ -108,7 +108,7 @@ List initial_state ( const NumericVector& T_seg,
 
   for(int i=0; i<S; i++){
 
-     int N_value = Nvec[i] ;
+     //int N_value = Nvec[i] ;
 
 
       if(Nvec[i]>0){   //Non-empty segment: sample V,Z,Q

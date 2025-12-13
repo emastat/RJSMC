@@ -1,24 +1,23 @@
-
 #' Function for extrapolating the results
-#'
 #' In this function the approximated posterior distributions are extracted.
 #' The observational time interval is discretized by regularly-spaced time points
-#'  defined through the parameter \code{interval_length}. For each time point
-#'  the posterior distribution of the dynamic states V, Z, Q and F is computed.
-#'  @param start_point starting point of the update interval
-#'  @param end_point ending point of the update interval
-#'  @param num_particles the number of particles generated in SMC
-#'  @param interval_length the chosen length for spacing each discretization time point
-#'  @param breakpoints_list list with inferred breakpoints inside the update interval, for all particles
-#'  @param V_state_list list with inferred V state at each breakpoint, for all particles
-#'  @param Z_state_list list with inferred Z state at each breakpoint, for all particles
-#'  @param Q_state_list list with inferred Q state at each breakpoint, for all particles
-#'  @param F_state_list list with inferred F state at each breakpoint, for all particles
-#'  @param num_states_V number of states for V
-#'  @param num_states_Z number of states for Z
-#'  @param num_states_Q number of states for Q
-#'  @param num_states_F number of states for F
-#'  @export
+#' defined through the parameter \code{interval_length}. For each time point
+#' the posterior distribution of the dynamic states V, Z, Q and F is computed.
+#' @param start_point starting point of the update interval
+#' @param end_point ending point of the update interval
+#' @param num_particles the number of particles generated in SMC
+#' @param interval_length the chosen length for spacing each discretization time point
+#' @param breakpoints_list list with inferred breakpoints inside the update interval, for all particles
+#' @param V_state_list list with inferred V state at each breakpoint, for all particles
+#' @param Z_state_list list with inferred Z state at each breakpoint, for all particles
+#' @param Q_state_list list with inferred Q state at each breakpoint, for all particles
+#' @param F_state_list list with inferred F state at each breakpoint, for all particles
+#' @param num_states_V number of states for V
+#' @param num_states_Z number of states for Z
+#' @param num_states_Q number of states for Q
+#' @param num_states_F number of states for F
+#' @export
+
 get_results <- function(start_point,
                         end_point,
                         num_particles,
@@ -33,7 +32,7 @@ get_results <- function(start_point,
                         num_states_Q,
                         num_states_F){
 
-#stop()
+  #stop()
   # vector with discretization points
   discr_points <- seq(start_point,
                         end_point-interval_length,

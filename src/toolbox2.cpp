@@ -77,3 +77,18 @@ IntegerVector table_cpp(IntegerVector X, int n,bool include_zero){
   return count_vec ;
 
 }
+
+
+// [[Rcpp::export]]
+void saveRObject(SEXP rObject, std::string filename) {
+  // Convert SEXP to R's data frame or whatever type you're saving
+  Rcpp::Environment base("package:base");
+  Rcpp::Function saveRDS = base["saveRDS"];
+  saveRDS(rObject, filename);
+}
+
+
+
+
+
+

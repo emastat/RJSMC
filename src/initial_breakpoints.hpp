@@ -5,7 +5,7 @@ using namespace Rcpp;
 
 
 
-NumericVector initial_breakpoints(  const NumericVector& T_seg,
+NumericVector initial_breakpoints(  const NumericVector& T_seg_orig,
                                     const double& t_star,
                                     const double& start_point,
                                     const double& end_point,

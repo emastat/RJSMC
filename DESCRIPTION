@@ -29,5 +29,7 @@ Imports:
     dplyr,
     ggplot2,
     extraDistr,
+    mclust,
+    fitdistrplus
 Depends: 
     R (>= 2.10)

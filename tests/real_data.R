@@ -1,13 +1,18 @@
+library(RJSMC)
+library(mclust)
+library(fitdistrplus)
+
 # load abb data and add the to the RJSMC package
 
 abb_data <- readRDS("/Users/emanueleuio/Desktop/di21_final.RDS")
 Tvec <- abb_data$time
 Yvec <- as.numeric(abb_data$label)
 
+set.seed(22)
 
 ts_data <- list()
-ts_data$Yvec <- Yvec[1:3000]
-ts_data$Tvec <- Tvec[1:3000]
+ts_data$Yvec <- Yvec[1:1000]
+ts_data$Tvec <- Tvec[1:1000]
 lambdamat <- readRDS("/Users/emanueleuio/Desktop/parameter_values/lambdamat_par.RDS")
 keyvec <- readRDS("/Users/emanueleuio/Desktop/parameter_values/greenvec_par.RDS")
 etavec <-  readRDS("/Users/emanueleuio/Desktop/parameter_values/etavec_par.RDS")
@@ -52,15 +57,15 @@ parameters$minimum_n <- 0
 
 settings <- list()
 settings$num_logs <- num_logs
-settings$length_UI <- 4
-settings$n_particle <- 100
+settings$length_UI <- 5
+settings$n_particle <- 10000
 settings$Jss1 <- 1/3
 settings$Js1s <- 1/3
 settings$Smax <- 50
-settings$n_ite <- 6000
-settings$burn_in <- 2000
-settings$thinning <- 10
-settings$method <- "waste_free"
+settings$n_ite <- 60000
+settings$burn_in <- 10000
+settings$thinning <- 5
+settings$method <- "turcotte"
 settings$recycled_particles = 4
 
 #sink("/Users/emanueleuio/Desktop/RJMCMC-output.txt")
@@ -71,23 +76,5 @@ out_SMC <- RJSMC::SMC(ts_data = ts_data,
                       settings = settings)
 
 
-# get number of Updating windows (i.e. intervals)
-out_SMC@n_UI
-
-# get marginal posterior for "V" at each discretization point
-
-class(out_SMC@posteriors_container_V)
-length(out_SMC@points_container)
-table(out_SMC@UI_index_vector)
-
-
-output =plot(out_SMC,
-    truth = NULL)
-output
-
-
-
-
-
-
+plot(out_SMC, truth = NULL)
 

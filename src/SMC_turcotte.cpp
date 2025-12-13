@@ -2,6 +2,7 @@
 #include <RcppArmadillo.h>
 #include "toolbox1.hpp"
 #include "RJMCMC_SMC.hpp"
+#include "resampling_func.hpp"
 
 using namespace Rcpp;
 
@@ -104,7 +105,7 @@ using namespace Rcpp;
   int n_UI = UI_bounds.size()-1 ; // number of Update intervals
 
   double start_point = UI_bounds[0] ; // left bound of the current Update Interval
-  double end_point = 0.0 ; // right bound of the current Update Interval
+  double end_point = 0.0 ; // initialize right bound of the current Update Interval
 
 
   //initialize the containers holding the current Bvec, Vvec, Zvec, Qvec, Fvec, Svec at each SMC iteration
@@ -137,7 +138,8 @@ using namespace Rcpp;
 
     end_point = UI_bounds[j+1] ;
 
-    if(sum(Tvec>start_point & Tvec<end_point)==0){
+
+    if(sum((Tvec>=start_point) & (Tvec<end_point))==0){
 
       //Do nothing - no observations inside the current Update Interval
 
@@ -146,13 +148,19 @@ using namespace Rcpp;
       // select the observations to be used in the current Update Interval.
       // select all the obs recorded after min(B_last). This is because
       // the current posterior is based on the obs from "B_last" while the proposal from "t_star"
-      // and being t_star ave(B_last) then min(B_last) < t_star is always true
+      // and being t_star=ave(B_last) then min(B_last) < t_star is always true
 
       double B_last_min = min(B_last) ;
-      double B_last_max = max(B_last) ;
 
       NumericVector  T_seg = Tvec[(Tvec>=B_last_min) & (Tvec<end_point)] ;
       IntegerVector  Y_seg = Yvec[(Tvec>=B_last_min) & (Tvec<end_point)] ;
+
+      double B_last_max = 0.0 ;
+
+      if(j>0){
+        B_last_max = max(B_last) ;
+      }
+      else{B_last_max = max(T_seg) ;}
 
       //perform RJMCMC
 
@@ -171,18 +179,20 @@ using namespace Rcpp;
       NumericVector B_last_non_empty_seg = B_last[B_last_non_empty_seg_logical] ;
       NumericVector B_last_empty_seg =  B_last[B_last_empty_seg_logical] ;
 
-      // compute "t_star for non-empty segments
+      // compute "t_star" for non-empty segments
       t_star_non_empty_seg = mean(B_last_non_empty_seg) ;
 
-      // compute "t_star for empty segments
+      // compute "t_star" for empty segments
       t_star_empty_seg = mean(B_last_empty_seg) ;
 
       // indexes of the particles
       IntegerVector seq_particle = seq(0,n_particle-1) ;
 
+      // index of particles whose last interval is not empty
       IntegerVector non_empty_particle_index_vec = seq_particle[B_last_non_empty_seg_logical] ;
-      IntegerVector empty_particle_index_vec = seq_particle[B_last_empty_seg_logical] ;
 
+      // index of particles whose last interval is empty
+      IntegerVector empty_particle_index_vec = seq_particle[B_last_empty_seg_logical] ;
 
       if(non_empty_particle_index_vec.length()>0){
 
@@ -195,7 +205,7 @@ using namespace Rcpp;
                    start_point,
                    end_point,
                    t_star_non_empty_seg,
-                    num_logs,
+                   num_logs,
                    lambdamat,
                    keyvec,
                    etavec,
@@ -225,7 +235,8 @@ using namespace Rcpp;
                    container_Q,
                    container_F,
                    Svec,
-                   weight_vec);
+                   weight_vec,
+                   false);
       }
 
       if(empty_particle_index_vec.length()>0){
@@ -269,7 +280,8 @@ using namespace Rcpp;
                    container_Q,
                    container_F,
                    Svec,
-                   weight_vec);
+                   weight_vec,
+                   true);
       }
 
       // normalize the weight vector
@@ -280,7 +292,59 @@ using namespace Rcpp;
 
         weight_vec[i] = weight_vec[i]  / sum_weight ;
 
+        if(NumericVector::is_na(weight_vec[i])){
+
+          Rcout << weight_vec << "\n"  ;
+          Rcout << sum_weight << "\n"  ;
+
+          stop("SMC_turcotte.cpp. weight is na");
+
+          }
+
       }
+
+
+      // List out_resampling= resampling_func(weight_vec,
+      //                       container_B,
+      //                       container_V,
+      //                       container_Z,
+      //                       container_Q,
+      //                       container_F,
+      //                       Svec,
+      //                       V_last_complete,
+      //                       B_last,
+      //                       n_particle);
+      //
+      // List out_sr_container_B = as<List>(out_resampling["sr_container_B"]);
+      // List out_sr_container_V = as<List>(out_resampling["sr_container_V"]);
+      // List out_sr_container_Z = as<List>(out_resampling["sr_container_Z"]);
+      // List out_sr_container_Q = as<List>(out_resampling["sr_container_Q"]);
+      // List out_sr_container_F = as<List>(out_resampling["sr_container_F"]);
+      // IntegerVector out_sr_Svec = as<IntegerVector>(out_resampling["sr_Svec"]) ;
+      // IntegerVector out_sr_V_last_complete = as<IntegerVector>(out_resampling["sr_V_last_complete"]) ;
+      // NumericVector out_sr_B_last = as<NumericVector>(out_resampling["sr_B_last"]) ;
+      //
+      //
+      //
+      // // update the containers
+      //
+      // for(int m=0; m<n_particle; m++){
+      //
+      //   container_B[m] = clone(as<IntegerVector>(out_sr_container_B[m]));
+      //   container_V[m] = clone(as<IntegerVector>(out_sr_container_V[m]));
+      //   container_Z[m] = clone(as<IntegerVector>(out_sr_container_Z[m]));
+      //   container_Q[m] = clone(as<IntegerVector>(out_sr_container_Q[m]));
+      //   container_F[m] = clone(as<IntegerVector>(out_sr_container_F[m]));
+      //
+      //   Svec[m] = out_sr_Svec[m] ;
+      //   V_last_complete[m] = out_sr_V_last_complete[m] ;
+      //   B_last[m] = out_sr_B_last[m] ;
+      //
+      //   weight_vec[m] = 1/n_particle ;
+      //
+      // }
+
+      // perform resampling
 
       //performe re-sampling (if needed)
 
@@ -290,23 +354,7 @@ using namespace Rcpp;
       //
       //
       // if(ESS < (M / 3) ){
-      //
-      //   /// @@@ START RESAMPLING THE PARTICLES GENERATED IN THIS ITERATIONS
-      //
-      //   resampling_window( weight_vec,
-      //                      container_B,
-      //                      container_Z,
-      //                      container_V) ;
-      //
-      //   weight_vec = rep(1.0/M,M) ;
-      //
-      // }
-      //store the weights
-      //array_W[j] = clone(weight_vec) ;
 
-      //store results
-      //store the containers current Update Interval
-      //
        storage_B[j] = clone( as<List>(container_B ) ) ;
        storage_V[j] = clone( as<List>(container_V ) ) ;
        storage_Z[j] = clone( as<List>(container_Z ) ) ;
@@ -318,10 +366,6 @@ using namespace Rcpp;
       start_point = end_point ;
 
     }
-
-
-
-
   }
 
   return ( List::create(Named("storage_B") = storage_B,

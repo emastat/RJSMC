@@ -8,7 +8,8 @@
   obj,
   origin = as.Date("2022-01-01"),
   pl = "V",
-  truth = list(B = Bvec, cl = Vvec)
+  truth = list(B = Bvec, cl = Vvec),
+  clnames = NULL
 )
 }
 \arguments{
@@ -17,7 +18,11 @@
 \item{origin}{Starting date for data}
 
 \item{pl}{Equal to V, Z, Q or F depending on which variable to pl}
+
+\item{truth}{A list containing 'V', a vector with true states within each segment and 'B', a vector containing the starting points for each segment}
+
+\item{clnames}{A vector giving names on the different classes. If NULL (default), classes are named 0,1,...}
 }
 \description{
-Plots an area plot over time with the areas corresponding to probabilities for the different discrete events
+Plots an area plot over time with the areas corresponding to probabilities for the different discrete events. If 'truth' is available, also a piecewise horizontal line with levels equal to the state number is displayed within the same plot (with levels described on the right horizontal axis)
 }

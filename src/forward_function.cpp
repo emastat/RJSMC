@@ -79,19 +79,19 @@ void         forward_function(            int& S,
   int IN = 0 ;   // index (from 1 to S) of the segment to split
 
   double LB=0.0, // lower bound of the selected segment
-    UB=0.0, // upper bound of the selected segment
-    u1=0.0, // value of a Unif(0,1) used to sampled a new changepoint
-    T_p=0.0, // the proposed changepoint
-    L_12 = 0.0, // length of the current segment
-    L_1p=0.0,  //length of the new  left segment
-    L_2p=0.0;  // length of the second right segment
+         UB=0.0, // upper bound of the selected segment
+         u1=0.0, // value of a Unif(0,1) used to sampled a new changepoint
+         T_p=0.0, // the proposed changepoint
+         L_12 = 0.0, // length of the current segment
+         L_1p=0.0,  //length of the new  left segment
+         L_2p=0.0;  // length of the second right segment
 
   int V_12 = 0, // V state of the current segment
-    Z_12 = 0, // Z state of the current segment
-    Q_12 = 0, // Q state of the current segment
-    F_12 = 0, // F state of the current segment
-    V_left = 0, //V  state of the segment before the current one
-    V_right = 0 ; //V state of the segment after the current one
+      Z_12 = 0, // Z state of the current segment
+      Q_12 = 0, // Q state of the current segment
+      F_12 = 0, // F state of the current segment
+      V_left = 0, //V  state of the segment before the current one
+      V_right = 0 ; //V state of the segment after the current one
 
   double count_1p = 0.0 ; // number of obs in proposed seg 1
   double count_2p = 0.0 ; // number of obs in proposed seg 2
@@ -114,7 +114,7 @@ void         forward_function(            int& S,
 
     //generate IN:  (the new segments must be bigger than 5 sec)
 
-    while(L_1p < (1.0/720.0) | L_2p < (1.0/720.0)){
+    while((L_1p < (1.0/720.0)) | (L_2p < (1.0/720.0))){
 
 
       //sample an interval to split
@@ -131,23 +131,25 @@ void         forward_function(            int& S,
 
       // generate the proposal breakpoint T_p
 
-      if(IN>1 & IN < S){
+      if((IN>1) & (IN < S)){
 
         // the new changepoint can be placed anywhere within the selected segment
 
         T_p =  LB + u1*(UB-LB)  ;
 
-      }else if(IN==S & S>1){
+      }else if((IN==S) & (S>1)){
 
         // the new changepoint must be placed within the penultimate changepoint (LB) and the end of the Update interval (end_point)
 
         T_p =  LB + u1*(end_point-LB)  ;
 
-      }else if(IN==1 & S==1){
+      }else if((IN==1) & (S==1)){
+
+        // there is only segment, so we can split it wherever withing the update interval
 
         T_p = start_point + u1*(end_point - start_point) ;
 
-      }else if(IN==1 & S>1){
+      }else if((IN==1) & (S>1)){
 
         // the new changepoint must be placed within the start point of the update interval (start_point) and the 3rd changepoint (UB)
 
@@ -188,7 +190,7 @@ void         forward_function(            int& S,
 
         open_segment = true ;
 
-        if(T_p < LB | T_p > end_point){
+        if((T_p < LB) | (T_p > end_point)){
 
           Rcout << "LB:  " << LB << "\n" ;
           Rcout << "T_p:  " << T_p << "\n" ;
@@ -253,7 +255,7 @@ void         forward_function(            int& S,
       bool condition_2 = (count_1p==0) & (V_left == 0) ;
       bool condition_3 = (count_2p==0) & (V_right == 0) ;
       bool condition_4 = (count_1p>0)  & (count_1p<minimum_n) ;
-      bool condition_5 = (count_2p>0) & (count_2p<minimum_n) & open_segment==false ;
+      bool condition_5 = (count_2p>0) & (count_2p<minimum_n) & (open_segment==false) ;
 
       if( ( condition_1 ) |
           ( condition_2 ) |
@@ -283,7 +285,7 @@ void         forward_function(            int& S,
 
   }
 
-  if(count_illegal_configurations> 49 | too_many_small_seg ==true){
+  if((count_illegal_configurations> 49) | (too_many_small_seg ==true)){
 
     // exit the forward function, not legal proposals have been generdted
 
@@ -292,8 +294,8 @@ void         forward_function(            int& S,
   }else{
 
 
-    if((count_1p >0 & count_1p < minimum_n) |
-       ((count_2p >0 & count_2p < minimum_n) & (open_segment == false)))
+    if( ((count_1p > 0) & (count_1p < minimum_n)) |
+       (( (count_2p > 0) & (count_2p < minimum_n)) & (open_segment == false)))
     {
 
       Rcout << "count_1p: " << count_1p << "\n" ;
@@ -446,7 +448,7 @@ void         forward_function(            int& S,
 
     double logr_rightV = 0 ;
 
-    if(V_2p==0 & V_right!=0){logr_rightV = - std::log(1-P0) ; }
+    if((V_2p==0) & (V_right!=0)){logr_rightV = - std::log(1-P0) ; }
 
     //final log ratio
 
