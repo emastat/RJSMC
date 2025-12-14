@@ -23,28 +23,41 @@ NumericVector extract_index(const NumericVector& x,
   NumericVector out=(3) ;
 
    int i = 0;
-
    int x_length = x.size() ;
 
-  while((x[i] <= lower) & (i < x_length)) i = i + 1;
+  while((i < x_length) && (x[i] <= lower)) {
+    i = i + 1;
+  }
+
+  // Cap i to prevent out-of-bounds access
+  if(i >= x_length){
+    i = x_length - 1;
+  }
 
   int j = i;
-
-  out[1] = i ; //store the left index
+  out[1] = i ;
 
  if(j<x_length){
 
-    while((x[j] < upper)  & (j < x_length) ) j = j + 1;
+    while((j < x_length) && (x[j] < upper)) {
+      j = j + 1;
+    }
 
-  j=j-1 ;
+    j = j - 1 ;
+    
+    if(j < 0){
+      j = -1;
+      out[2] = j;
+      return out;
+    }
+    if(j >= x_length){
+      j = x_length - 1;
+    }
 
-  if(j>=i){
-
-    out[0] = j-i +1 ; //store the length of the selected vector
-
-    out[2] = j ; //store the right index
-
-  }
+    if(j>=i){
+      out[0] = j-i +1 ;
+      out[2] = j ;
+    }
 
 
  }else{ j =-1 ; out[2] = j ; }

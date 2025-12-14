@@ -190,4 +190,3 @@ test_that("data_simulation generates valid data", {
   expect_true(all(result$Tvec >= 0))
   expect_true(all(result$Tvec <= max(result$Bvec)))
 })
-

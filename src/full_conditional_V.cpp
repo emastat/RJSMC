@@ -71,7 +71,25 @@ List full_conditional_V(const int& V,
     out_extract =clone( extract_index(T_seg,LB,end_point)) ;
   }
 
-  IntegerVector log_vector = Y_seg[Range(out_extract[1],out_extract[2])] ;
+  IntegerVector log_vector;
+  if(out_extract[2] < 0){
+    log_vector = IntegerVector(0) ;
+  } else {
+    int end_idx = (int)out_extract[2];
+    int start_idx = (int)out_extract[1];
+    
+    if(end_idx >= Y_seg.size()){
+      end_idx = Y_seg.size() - 1;
+    }
+    if(start_idx < 0){
+      start_idx = 0;
+    }
+    if(start_idx > end_idx){
+      log_vector = IntegerVector(0) ;
+    } else {
+      log_vector = Y_seg[Range(start_idx, end_idx)] ;
+    }
+  }
 
 
 

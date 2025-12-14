@@ -8,6 +8,7 @@
 
 # User-specific files
 .Ruserdata
+.lintr
 
 # Example code in package build process
 *-Ex.R
@@ -20,6 +21,9 @@
 
 # RStudio files
 .Rproj.user/
+
+# VS Code / Cursor files
+.vscode/
 
 # produced vignettes
 vignettes/*.html

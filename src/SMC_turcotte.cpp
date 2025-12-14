@@ -127,17 +127,11 @@ using namespace Rcpp;
   List storage_S(n_UI); // List with the "Svec" generated at the end of each SMC iteration
   List storage_weight(n_UI); // List with the normalize particle weights at the end of each SMC iteration
 
-
-
   // START SMC-RJMCMC
-
 
   for(int j=0; j<n_UI ; j++ ){
 
-//Rcout << "@@@@@@@@@@@   updating window n  "  << j << "\n" ;
-
     end_point = UI_bounds[j+1] ;
-
 
     if(sum((Tvec>=start_point) & (Tvec<end_point))==0){
 

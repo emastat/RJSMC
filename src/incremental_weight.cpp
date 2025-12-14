@@ -166,7 +166,20 @@ double incremental_weight(const NumericVector& T_seg,
     }
 
     //messages inside the segment
-    IntegerVector log_vector_target = Y_seg[Range(out_extract_target[1],out_extract_target[2])] ;
+    IntegerVector log_vector_target;
+    if(out_extract_target[2] < 0){
+      log_vector_target = IntegerVector(0);
+    } else {
+      int end_idx = (int)out_extract_target[2];
+      int start_idx = (int)out_extract_target[1];
+      if(end_idx >= Y_seg.size()) end_idx = Y_seg.size() - 1;
+      if(start_idx < 0) start_idx = 0;
+      if(start_idx > end_idx){
+        log_vector_target = IntegerVector(0);
+      } else {
+        log_vector_target = Y_seg[Range(start_idx, end_idx)];
+      }
+    }
 
     // frequency table for the messages
     IntegerVector dj_vec_target = table_cpp(log_vector_target,num_logs,false) ;
@@ -240,7 +253,20 @@ double incremental_weight(const NumericVector& T_seg,
     }
 
     //messages inside the segment
-    IntegerVector log_vector_importance = Y_seg[Range(out_extract_importance[1],out_extract_importance[2])] ;
+    IntegerVector log_vector_importance;
+    if(out_extract_importance[2] < 0){
+      log_vector_importance = IntegerVector(0);
+    } else {
+      int end_idx = (int)out_extract_importance[2];
+      int start_idx = (int)out_extract_importance[1];
+      if(end_idx >= Y_seg.size()) end_idx = Y_seg.size() - 1;
+      if(start_idx < 0) start_idx = 0;
+      if(start_idx > end_idx){
+        log_vector_importance = IntegerVector(0);
+      } else {
+        log_vector_importance = Y_seg[Range(start_idx, end_idx)];
+      }
+    }
 
     // frequency table for the messages
     IntegerVector dj_vec_importance = table_cpp(log_vector_importance,num_logs,false) ;
