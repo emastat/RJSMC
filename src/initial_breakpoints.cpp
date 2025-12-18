@@ -136,7 +136,7 @@ NumericVector initial_breakpoints(  const NumericVector& T_seg_orig,
 
     }
 
-    NumericVector Bvec1(T_point.size() + 1) ;
+    NumericVector Bvec1(T_point.size() + 1,-100) ;
 
 
     //update the last breakpoint: always after the end of the Update interval
@@ -154,7 +154,7 @@ NumericVector initial_breakpoints(  const NumericVector& T_seg_orig,
 
     //add t_star as first breakpoint
     Bvec1_final.push_front(t_star) ;
-
+    
     // remove breakpoints creating segments smaller than 5 seconds
 
     NumericVector seg_length = diff(Bvec1_final) ;

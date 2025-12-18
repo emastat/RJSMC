@@ -89,28 +89,28 @@ List iteration0_RJMCMC (   const NumericVector& T_seg,
 
     // Compute states for the generated segments
     List out_state = initial_state( T_seg,
-                                    Y_seg,
-                                    S,
-                                    Bvec,
-                                    end_point,
-                                    probvec_V,
-                                    probvec_Q,
-                                    probvec_Z,
-                                    probvec_F,
-                                    lambdamat,
-                                    U,
-                                    W,
-                                    K,
-                                    alphavec,
-                                    muvec,
-                                    keyvec,
-                                    etavec,
-                                    key0vec,
-                                    eta0vec,
-                                    P0,
-                                    num_logs,
-                                    empty_mix,
-                                    minimum_n);
+                                  Y_seg,
+                                  S,
+                                  Bvec,
+                                  end_point,
+                                  probvec_V,
+                                  probvec_Q,
+                                  probvec_Z,
+                                  probvec_F,
+                                  lambdamat,
+                                  U,
+                                  W,
+                                  K,
+                                  alphavec,
+                                  muvec,
+                                  keyvec,
+                                  etavec,
+                                  key0vec,
+                                  eta0vec,
+                                  P0,
+                                  num_logs,
+                                  empty_mix,
+                                  minimum_n);
 
      IntegerVector Vvec_partial =clone(as<IntegerVector>( out_state["Vvec"])) ;
      IntegerVector Zvec_partial =clone(as<IntegerVector>(  out_state["Zvec"]));
@@ -121,7 +121,7 @@ List iteration0_RJMCMC (   const NumericVector& T_seg,
 
      if(S>Smax){ stop("number of segments S greater than Smax. Choose a bigger Smax");}
 
-     NumericVector Bvec_final = NumericVector(Smax+1) ;
+     NumericVector Bvec_final = NumericVector(Smax+1,-100.0) ;
      Bvec_final[Range(0,S)] = Bvec ;
 
      IntegerVector Zvec_final = IntegerVector(Smax) ;

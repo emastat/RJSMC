@@ -146,34 +146,26 @@ using namespace Rcpp;
 
       double B_last_min = min(B_last) ;
 
+      if(B_last_min > start_point){
+        Rcout << "B_last_min is greater than start_point" << "\n" ;
+        Rcout << "B_last_min: " << B_last_min << "\n" ;
+        Rcout << "start_point: " << start_point << "\n" ;
+        stop("SMC_turcotte.cpp. B_last_min is greater than start_point");
+      }
+
       NumericVector  T_seg = Tvec[(Tvec>=B_last_min) & (Tvec<end_point)] ;
       IntegerVector  Y_seg = Yvec[(Tvec>=B_last_min) & (Tvec<end_point)] ;
 
-      double B_last_max = 0.0 ;
-
-      if(j>0){
-        B_last_max = max(B_last) ;
-      }
-      else{
-        // Check if T_seg is non-empty before calling max()
-        // T_seg can be empty even if observations exist in [start_point, end_point)
-        // because T_seg uses a different range [B_last_min, end_point)
-        if(T_seg.size() > 0){
-          B_last_max = max(T_seg) ;
-        } else {
-          // If T_seg is empty, use end_point as fallback
-          // This can happen when B_last_min > all observations in the interval
-          B_last_max = end_point ;
-        }
-      }
-
       //perform RJMCMC
+
+      // larget Breakpoint observed among the last breakpoints vector across all particles, in previous Update Interval
+      double B_last_max =  max(B_last) ;
 
       // --- collect B_last value
 
       // retrieve largest_obs: largest observation between [B_last_min; B_last_max]
 
-      NumericVector obs_in_B = T_seg[T_seg <= B_last_max] ;
+      NumericVector obs_in_B = as<NumericVector>(T_seg[T_seg <= B_last_max]) ;
 
       double largest_obs = max(obs_in_B) ;
 

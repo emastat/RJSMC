@@ -185,13 +185,13 @@ void reduce_Bvec(NumericVector& Bvec,
 
   // shift all the breakpoints from index BR+1 onwards 1 position to the left
 
-   for(int j=BR+1 ; j<S+1;j++){
+   for(int j=BR+1 ; j<S+2;j++){
 
      Bvec[j-1] =Bvec[j] ;
 
    }
 
-   Bvec[S] = 0.0 ;
+   //Bvec[S] = 0.0 ;
 }
 
 

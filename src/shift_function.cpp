@@ -126,19 +126,23 @@ void  shift_function(      int& S,
         u1 =  R::runif(0.0,1.0) ;
 
         if((BR>1) & (BR < (S-1))){ // the new changepoint can be placed anywhere within the selected segment
+           // BUT: if BR > 0, T_p must be >= start_point (only Bvec[0] can be < start_point)
+           double effective_LB = std::max(LB, start_point);
+           T_p =  effective_LB + u1*(UB-effective_LB)  ;
 
-           T_p =  LB + u1*(UB-LB)  ;
 
         }else if((BR>1) & (BR==(S-1))){ // the new changepoint must be placed within the penultimate changepoint (LB) and the end of the Update interval (end_point)
+           // BUT: if BR > 0, T_p must be >= start_point
 
-           T_p = LB + u1*(end_point-LB)  ;
+           double effective_LB = std::max(LB, start_point);
+           T_p = effective_LB + u1*(end_point-effective_LB)  ;
 
         }else if((BR==1) & (BR<(S-1))){ // the new changepoint must be placed within the start point of the update interval start_point) and the 3rd changepoint (UB)
-
+           // T_p must be >= start_point (BR==1 means we're shifting breakpoint at position 1, not 0)
            T_p = start_point + u1 * (UB - start_point) ;
 
         }else if((BR==1) & (BR==(S-1))){ //the new changepoint must be placed between start_point and end_point
-
+           // T_p must be >= start_point (BR==1 means we're shifting breakpoint at position 1, not 0)
            T_p = start_point + u1 * (end_point - start_point) ;
         }
 
@@ -489,16 +493,9 @@ void  shift_function(      int& S,
        int illegal_Break = sum(Bvec_actual < start_point) ;
 
        if(illegal_Break > 1 ){
-
-          Rcout << "start_point:  " << start_point << "\n" ;
-          Rcout << "end_point:  " << end_point << "\n" ;
-          Rcout << "original_bvec:  " << Bvec_clone << "\n" ;
-          Rcout << "shift_function: this is Bvec:  " << Bvec_actual << "\n"  ;
           stop("shit_function: more than 1 Breakpoint vector is smaller than LB");
-
        }
-
-
+      
     }
 
    }

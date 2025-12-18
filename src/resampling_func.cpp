@@ -86,7 +86,7 @@ List resampling_func(const NumericVector& weight_vec,
        }
        break; // Exit the main loop since all slots are assigned
      } else {
-       current_sum_w = sum_weight_vec[current_particle] ;
+     current_sum_w = sum_weight_vec[current_particle] ;
      }
 
    }

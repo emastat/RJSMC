@@ -156,10 +156,24 @@ void     RJMCMC_SMC(const NumericVector& T_seg,
                                             0.2,
                                             Smax);
 
+    // check the all element of B_last are less than start_point
+    for(int i=0; i<particle_index_vec_local.length(); i++){
+      int ii = particle_index_vec_local[i];
+      if(B_last[ii] > start_point){
+
+        Rcout << "this is start_point   " << start_point << "\n" ;
+        Rcout << "this is ii   " << ii << "\n" ;
+        Rcout << "this is B_last[ii]   " << B_last[ii] << "\n" ;
+        Rcpp::stop("RJMCMC_SMC.cpp at right after iteration 0: B_last[%d] = %f must be <= start_point = %f", 
+                   ii, B_last[ii], start_point);
+      }
+    }                                            
+
 
     int S =  out_iteration_0["S"];
 
-    NumericVector Bvec =  out_iteration_0["Bvec"];
+    // Bvec contains vector of breakpoints in the current Update Interval including t_star and tau_k (last breakpoint after end_point)
+    NumericVector Bvec = out_iteration_0["Bvec"];
 
     IntegerVector Vvec = out_iteration_0["Vvec"];
 
@@ -177,6 +191,18 @@ void     RJMCMC_SMC(const NumericVector& T_seg,
 
 
     if(n_ite<= burn_in){stop("n_ite cannot be smaller than burn_in");}
+
+    // test for Bvec[1] < start_point                                        
+    
+    if( (S>1) & (Bvec[1] < start_point)){
+      Rcpp::stop("RJMCMC_SMC.cpp at iteration 0: Bvec[1] = %f must be >= start_point = %f", 
+                 Bvec[1], start_point);
+    }
+
+    if (Bvec[0] > start_point){
+      Rcpp::stop("RJMCMC_SMC.cpp at iteration 0: Bvec[0] = %f must be <= start_point = %f", 
+                 Bvec[0], start_point);
+    }
 
 
      //2. perform  RJMCMC
@@ -225,16 +251,15 @@ void     RJMCMC_SMC(const NumericVector& T_seg,
                           start_point,
                           end_point);
 
-        /// to remove
-        // NumericVector out_extract_forward =clone( extract_index(T_seg,Bvec[0],Bvec[1])) ;
-        //
-        // double count_forward = out_extract_forward[0] ;
-        //
-        // if((count_forward>0) & (count_forward<minimum_n)){
-        //
-        //   stop("count_forward as >0 and <minimum_n") ;
-        // }
-        // end remove
+      // test for Bvec[0] < start_point                                        
+      if( (S>1) & (Bvec[1] < start_point)){
+        Rcpp::stop("RJMCMC_SMC.cpp at forward_function: Bvec[1] = %f must be >= start_point = %f", 
+                   Bvec[1], start_point);
+      }
+      if (Bvec[0] > start_point){
+        Rcpp::stop("RJMCMC_SMC.cpp at forward_function: Bvec[0] = %f must be <= start_point = %f", 
+                   Bvec[0], start_point);
+      }
 
       }else if(S_s==1){
 
@@ -268,16 +293,18 @@ void     RJMCMC_SMC(const NumericVector& T_seg,
                           start_point,
                           end_point);
 
-        /// to remove
-        NumericVector out_extract_backward =clone( extract_index(T_seg,Bvec[0],Bvec[1])) ;
 
-        double count_backward = out_extract_backward[0] ;
+      // test for Bvec[0] < start_point                                        
+      if( (S>1) & (Bvec[1] < start_point)){
+        Rcpp::stop("RJMCMC_SMC.cpp at backward_function: Bvec[1] = %f must be >= start_point = %f", 
+                   Bvec[1], start_point);
+      }
 
-        if((count_backward>0) & (count_backward<minimum_n)){
+      if (Bvec[0] > start_point){
+        Rcpp::stop("RJMCMC_SMC.cpp at backward_function: Bvec[0] = %f must be <= start_point = %f", 
+                   Bvec[0], start_point);
+      }
 
-          stop("count_backward as >0 and <minimum_n") ;
-        }
-        // end remove
 
       }else{
 
@@ -312,19 +339,18 @@ void     RJMCMC_SMC(const NumericVector& T_seg,
                            start_point,
                            end_point);
 
-        /// to remove
-        NumericVector out_extract_shift =clone( extract_index(T_seg,Bvec[0],Bvec[1])) ;
+      // test for Bvec[0] < start_point                                        
+      if( (S>1) & (Bvec[1] < start_point)){
+        Rcpp::stop("RJMCMC_SMC.cpp at shift_function: Bvec[1] = %f must be >= start_point = %f", 
+                   Bvec[1], start_point);
+      }
 
-        double count_shift = out_extract_shift[0] ;
-
-        if((count_shift>0) & (count_shift<minimum_n)){
-
-          stop("count_shift as >0 and <minimum_n") ;
-        }
-        // end remove
-
-       }
-
+      if (Bvec[0] > start_point){
+        Rcpp::stop("RJMCMC_SMC.cpp at shift_function: Bvec[0] = %f must be <= start_point = %f", 
+                   Bvec[0], start_point);
+      }
+  
+      } //end of the S_s condition
 
       V_first =Vvec[0] ;
 
@@ -458,7 +484,10 @@ void     RJMCMC_SMC(const NumericVector& T_seg,
 
           Svec[index] = S ;
 
-          NumericVector Bvec_final(S) ;
+
+          // Bvec has S+1 elements (S segments need S+1 breakpoints)
+          // Bvec_final should also have S+1 elements
+          NumericVector Bvec_final(S+1) ;
           IntegerVector Vvec_final(S) ;
           IntegerVector Zvec_final(S) ;
           IntegerVector Qvec_final(S) ;
@@ -466,14 +495,16 @@ void     RJMCMC_SMC(const NumericVector& T_seg,
 
           // Bvec_final has the last breakpoint observed inside the previous Update Interval + all
           // sampled breakpoints inside the current  Update Interval
-          Bvec_final[0] = B_last[index] ;
+
+          double current_B_last = B_last[index] ;
+          
+          Bvec_final[0] = current_B_last ;
           Vvec_final[0] = Vvec[0] ;
           Zvec_final[0] = Zvec[0] ;
           Qvec_final[0] = Qvec[0] ;
           Fvec_final[0] = Fvec[0] ;
-
-
-          if(Bvec.size()>2){
+          
+          if(S >= 2){
 
             for(int j=1; j<S;j++){
 
@@ -485,12 +516,50 @@ void     RJMCMC_SMC(const NumericVector& T_seg,
 
             }
 
+            // Copy the last breakpoint Bvec[S] to Bvec_final[S]
+            // This is critical: Bvec[S] is the last breakpoint (usually > end_point for open segments)
+            Bvec_final[S] = Bvec[S] ;
+
             // Update B_last: the last changepoint observed WITHIN the Update Interval
-            B_last[index] = Bvec[S-1] ;
+
+            double new_B_last = Bvec[S-1] ;
+
+            if (new_B_last > end_point){
+              Rcpp::stop("RJMCMC_SMC.cpp at end of loop: new_B_last = %f must be <= end_point = %f for particle %d", 
+                         new_B_last, end_point, index);
+            }
+            B_last[index] = new_B_last ;
 
             //update the V state of the last complete segment (start and end of the seg inside the Update Interval)
             V_last_complete[index] = Vvec[S - 2] ;
 
+          }else{
+
+            // Case when S == 1: Bvec has 2 elements (Bvec[0] and Bvec[1])
+            // We've already set Bvec_final[0], now set Bvec_final[1]
+            if(S == 1){
+
+              Bvec_final[1] = Bvec[1] ;
+
+              // Update B_last: when S==1, Bvec[0] is t_star and Bvec[1] is the last breakpoint
+              //B_last[index] = Bvec[1] ;
+
+              B_last[index] = end_point-0.001;
+            
+            }
+          
+          }
+
+          if (Bvec_final[0] > start_point){
+
+            Rcout << "this is current_B_last   " << current_B_last << "\n" ;
+            Rcout << "this is start_point   " << start_point << "\n" ;
+            Rcout << "this is Bvec_final   " << Bvec_final << "\n" ;
+            Rcout << "this is S   " << S << "\n" ;
+            Rcout << "this is Bvec   " << Bvec << "\n" ;
+            
+            Rcpp::stop("RJMCMC_SMC.cpp at end of loop: Bvec_final[0] = %f must be <= start_point = %f for particle %d", 
+                       Bvec_final[0], start_point, index);
           }
 
 
@@ -500,6 +569,7 @@ void     RJMCMC_SMC(const NumericVector& T_seg,
           container_Z[index] = clone(Zvec_final) ;
           container_Q[index] = clone(Qvec_final) ;
           container_F[index] = clone(Fvec_final) ;
+          
 
 
           // update the particle_index iterator
@@ -507,7 +577,10 @@ void     RJMCMC_SMC(const NumericVector& T_seg,
           particle_count = particle_count - 1 ;
 
 
-        }else{}
+        }else{
+
+          // DO NOTHING. No particles to update
+        }
 
 
         if(particle_count == 0){
@@ -520,6 +593,67 @@ void     RJMCMC_SMC(const NumericVector& T_seg,
 
     } //end of the  RJMCMC iteration
 
+    if (particle_count > 0){
+      Rcout << "MCMC did not update all the particles, please increase n_ite parameter " << "\n" ;
+      Rcpp::stop("RJMCMC_SMC.cpp: MCMC did not update all the particles, please increase n_ite parameter ");
+    }
+
+    for(int i=0; i<particle_index_vec_local.length(); i++){
+
+      int ii = particle_index_vec_local[i];
+
+      if(B_last[ii] > end_point){
+
+        Rcout << "this is B_last   " << B_last << "\n" ;
+
+        Rcpp::stop("RJMCMC_SMC.cpp at 602: B_last[%d] = %f must be <= end_point = %f", 
+                   ii, B_last[ii], end_point);
+      }
+    }
+
+   // Validate breakpoint constraints for all Bvec in container_B
+    for(int i = 0; i < particle_index_vec_local.length(); i++){
+    
+      int ii = particle_index_vec_local[i];
+        
+      NumericVector Bvec_check = container_B[ii];
+      int S_check = Svec[ii];
+      
+      // Bvec should have S+1 elements
+      if(Bvec_check.length() != S_check + 1){
+        Rcpp::stop("RJMCMC_SMC.cpp: Bvec length mismatch. Expected %d, got %d for particle %d", 
+                   S_check + 1, Bvec_check.length(), ii);
+      }
+      
+      // Check 1: Bvec[0] must be < start_point (carry-over from previous UI)
+      if( (S_check>1) & (Bvec_check[1] < start_point)){
+        Rcpp::stop("RJMCMC_SMC.cpp: Bvec[1] = %f must be >= start_point = %f for particle %d", 
+                   Bvec_check[1], start_point, ii);
+      }
+
+      if (Bvec_check[0] > start_point){
+        Rcpp::stop("RJMCMC_SMC.cpp: Bvec[0] = %f must be <= start_point = %f for particle %d", 
+                   Bvec_check[0], start_point, ii);
+      }
+      // Check 2: Last element (Bvec[S]) must be > end_point (open segment boundary)
+      int last_idx = Bvec_check.length() - 1;  // This is S (since Bvec has S+1 elements)
+      if(Bvec_check[last_idx] <= end_point){
+        Rcout << "start_point = " << start_point << "\n";
+        Rcout << "end_point = " << end_point << "\n";
+        Rcout << "this is T_seg --> " << T_seg << "\n" ;
+        Rcout << "this is Bvec --> " << Bvec_check << "\n" ;
+        Rcpp::stop("RJMCMC_SMC.cpp: Last breakpoint Bvec[%d] = %f must be > end_point = %f for particle %d", 
+                   last_idx, Bvec_check[last_idx], end_point, ii);
+      }
+      
+      // Check 3: Elements from index 1 to S-1 must be between start_point and end_point (inclusive)
+      for(int j = 1; j < S_check; j++){
+        if(Bvec_check[j] < start_point || Bvec_check[j] > end_point){
+          Rcpp::stop("RJMCMC_SMC.cpp: Bvec[%d] = %f must be between start_point = %f and end_point = %f for particle %d", 
+                     j, Bvec_check[j], start_point, end_point, ii);
+        }
+      }
+    }
 
     if(particle_count >0){
 
@@ -549,7 +683,8 @@ void     RJMCMC_SMC(const NumericVector& T_seg,
 
     int sample_size = 5 ;
 
-    List generated_breakpoint_list = breakpoints_sampling(Named("start_point") = t_star,
+    List generated_breakpoint_list = breakpoints_sampling(
+                         Named("start_point") = start_point,
                          Named("end_point") = end_point,
                          Named("breakpoint_list") = selected_breakpoint_vector,
                          Named("sample_size") = sample_size) ;
@@ -578,13 +713,17 @@ void     RJMCMC_SMC(const NumericVector& T_seg,
 
       weight_vec[index_value] = weight_vec[index_value] * std::exp(weigths_corr_value);
 
+      if(NumericVector::is_na(weight_vec[index_value])){
+
+        
+        Rcout << "this is index_value   " << index_value << "\n"  ;
+        Rcout << "this is weight_vec[index_value]   " << weight_vec[index_value] << "\n"  ;
+
+        stop("RJMCMC_SMC.cpp. weight is na line 721");
+
+        }
+
       if(NumericVector::is_na(weigths_corr_value)){
-
-        saveRObject(T_seg, "/Users/emanueleuio/Desktop/inspect_results/T_seg.rds");
-        saveRObject(generated_breakpoint_list, "/Users/emanueleuio/Desktop/inspect_results/generated_breakpoint_list.rds");
-
-        Rcout << "this is sample size"<< sample_size <<"\n" ;
-        Rcout << "this is  K"<< K <<"\n" ;
 
         stop("RJMCMC_SMC.cpp. weigths_corr_value is na");
 

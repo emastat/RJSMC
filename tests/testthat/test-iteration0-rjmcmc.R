@@ -110,58 +110,88 @@ test_that("iteration0_RJMCMC returns correct structure", {
 })
 
 test_that("iteration0_RJMCMC returns correct dimensions", {
-  ts_data <- create_test_ts_data(n_obs = 50, num_logs = 5, seed = 222)
-  parameters <- create_test_parameters(U = 3, W = 2, K = 2, num_logs = 5)
-  
-  start_point <- 0.0
-  end_point <- 10.0
-  t_star <- 0.0
-  Smax <- 50
-  
-  in_interval <- (ts_data$Tvec >= start_point) & (ts_data$Tvec < end_point)
-  T_seg <- ts_data$Tvec[in_interval]
-  Y_seg <- ts_data$Yvec[in_interval]
-  
-  if (length(T_seg) > 0) {
-    set.seed(333)
-    result <- iteration0_RJMCMC(
-      T_seg, Y_seg,
-      minimum_n = parameters$minimum_n,
-      start_point, end_point, t_star,
-      K = parameters$K, W = parameters$W, U = parameters$U,
-      empty_mix = TRUE,
-      probvec_V = parameters$probvec_V,
-      probvec_Z = parameters$probvec_Z,
-      probvec_Q = parameters$probvec_Q,
-      probvec_F = parameters$probvec_F,
-      alphavec = parameters$alphavec,
-      muvec = parameters$muvec,
-      keyvec = parameters$keyvec,
-      etavec = parameters$etavec,
-      key0vec = parameters$key0vec,
-      eta0vec = parameters$eta0vec,
-      lambdamat = parameters$lambdamat,
-      P0 = parameters$P0,
-      num_logs = 5,
-      max_range = 1.0,
-      Smax = Smax
-    )
+  # Run 100 different test cases to catch edge cases
+  for (test_case in 1:100) {
+    # Vary parameters across test cases
+    seed_data <- 2000 + test_case
+    seed_rjmcmc <- 3000 + test_case
     
-    S <- result$S
+    # Vary number of observations
+    n_obs <- sample(c(20, 30, 50, 100, 200), 1)
     
-    # Check dimensions match Smax
-    expect_equal(length(result$Bvec), Smax + 1)
-    expect_equal(length(result$Vvec), Smax)
-    expect_equal(length(result$Zvec), Smax)
-    expect_equal(length(result$Qvec), Smax)
-    expect_equal(length(result$Fvec), Smax)
+    # Vary num_logs
+    num_logs <- sample(c(3, 4, 5, 6), 1)
     
-    # Nvec should have length S (not Smax)
-    expect_equal(length(result$Nvec), S)
+    # Vary U, W, K
+    U <- sample(c(2, 3, 4, 5), 1)
+    W <- sample(c(2, 3, 4), 1)
+    K <- sample(c(2, 3, 4), 1)
     
-    # S should be positive and <= Smax
-    expect_true(S > 0)
-    expect_true(S <= Smax)
+    # Vary interval bounds
+    start_point <- runif(1, 0, 5)
+    end_point <- start_point + runif(1, 5, 20)
+    t_star <- runif(1, start_point - 1, start_point)
+    
+    # Vary Smax
+    Smax <- sample(c(20, 30, 50, 100), 1)
+    
+    ts_data <- create_test_ts_data(n_obs = n_obs, num_logs = num_logs, seed = seed_data)
+    parameters <- create_test_parameters(U = U, W = W, K = K, num_logs = num_logs)
+    
+    in_interval <- (ts_data$Tvec >= start_point) & (ts_data$Tvec < end_point)
+    T_seg <- ts_data$Tvec[in_interval]
+    Y_seg <- ts_data$Yvec[in_interval]
+    
+    # Only test if we have observations in the interval
+    if (length(T_seg) > 0) {
+      set.seed(seed_rjmcmc)
+      result <- iteration0_RJMCMC(
+        T_seg, Y_seg,
+        minimum_n = parameters$minimum_n,
+        start_point, end_point, t_star,
+        K = parameters$K, W = parameters$W, U = parameters$U,
+        empty_mix = TRUE,
+        probvec_V = parameters$probvec_V,
+        probvec_Z = parameters$probvec_Z,
+        probvec_Q = parameters$probvec_Q,
+        probvec_F = parameters$probvec_F,
+        alphavec = parameters$alphavec,
+        muvec = parameters$muvec,
+        keyvec = parameters$keyvec,
+        etavec = parameters$etavec,
+        key0vec = parameters$key0vec,
+        eta0vec = parameters$eta0vec,
+        lambdamat = parameters$lambdamat,
+        P0 = parameters$P0,
+        num_logs = num_logs,
+        max_range = 1.0,
+        Smax = Smax
+      )
+      
+      S <- result$S
+      
+      # Check dimensions match Smax
+      expect_equal(length(result$Bvec), Smax + 1, 
+                   info = paste("Test case", test_case, "- Bvec length"))
+      expect_equal(length(result$Vvec), Smax,
+                   info = paste("Test case", test_case, "- Vvec length"))
+      expect_equal(length(result$Zvec), Smax,
+                   info = paste("Test case", test_case, "- Zvec length"))
+      expect_equal(length(result$Qvec), Smax,
+                   info = paste("Test case", test_case, "- Qvec length"))
+      expect_equal(length(result$Fvec), Smax,
+                   info = paste("Test case", test_case, "- Fvec length"))
+      
+      # Nvec should have length S (not Smax)
+      expect_equal(length(result$Nvec), S,
+                   info = paste("Test case", test_case, "- Nvec length"))
+      
+      # S should be positive and <= Smax
+      expect_true(S > 0,
+                  info = paste("Test case", test_case, "- S > 0"))
+      expect_true(S <= Smax,
+                  info = paste("Test case", test_case, "- S <= Smax"))
+    }
   }
 })
 
@@ -216,6 +246,125 @@ test_that("iteration0_RJMCMC breakpoints are valid", {
     
     # All breakpoints should be finite
     expect_true(all(is.finite(Bvec)))
+  }
+})
+
+test_that("iteration0_RJMCMC only last breakpoint is greater than end_point", {
+  # Run 1000 different test cases to thoroughly test the constraint
+  for (test_case in 1:1000) {
+    # Vary parameters across test cases
+    seed_data <- 4000 + test_case
+    seed_rjmcmc <- 5000 + test_case
+    
+    # Vary number of observations
+    n_obs <- sample(c(20, 30, 50, 100, 200, 300), 1)
+    
+    # Vary num_logs
+    num_logs <- sample(c(3, 4, 5, 6, 7), 1)
+    
+    # Vary U, W, K
+    U <- sample(c(2, 3, 4, 5, 6), 1)
+    W <- sample(c(2, 3, 4, 5), 1)
+    K <- sample(c(2, 3, 4, 5), 1)
+    
+    # Vary interval bounds
+    start_point <- runif(1, 0, 10)
+    end_point <- start_point + runif(1, 5, 30)
+    t_star <- runif(1, start_point - 2, start_point)
+    
+    # Vary Smax
+    Smax <- sample(c(20, 30, 50, 100, 150), 1)
+    
+    ts_data <- create_test_ts_data(n_obs = n_obs, num_logs = num_logs, seed = seed_data)
+    parameters <- create_test_parameters(U = U, W = W, K = K, num_logs = num_logs)
+    
+    in_interval <- (ts_data$Tvec >= start_point) & (ts_data$Tvec < end_point)
+    T_seg <- ts_data$Tvec[in_interval]
+    Y_seg <- ts_data$Yvec[in_interval]
+    
+    # Only test if we have observations in the interval
+    if (length(T_seg) > 0) {
+      set.seed(seed_rjmcmc)
+      result <- iteration0_RJMCMC(
+        T_seg, Y_seg,
+        minimum_n = parameters$minimum_n,
+        start_point, end_point, t_star,
+        K = parameters$K, W = parameters$W, U = parameters$U,
+        empty_mix = TRUE,
+        probvec_V = parameters$probvec_V,
+        probvec_Z = parameters$probvec_Z,
+        probvec_Q = parameters$probvec_Q,
+        probvec_F = parameters$probvec_F,
+        alphavec = parameters$alphavec,
+        muvec = parameters$muvec,
+        keyvec = parameters$keyvec,
+        etavec = parameters$etavec,
+        key0vec = parameters$key0vec,
+        eta0vec = parameters$eta0vec,
+        lambdamat = parameters$lambdamat,
+        P0 = parameters$P0,
+        num_logs = num_logs,
+        max_range = 1.0,
+        Smax = Smax
+      )
+      
+      S <- result$S
+      Bvec <- result$Bvec[1:(S+1)]  # Only use the first S+1 breakpoints
+      
+      # Count how many breakpoints are > end_point
+      breakpoints_gt_end <- sum(Bvec > end_point)
+      
+      # There should be exactly 1 breakpoint > end_point (the last one)
+      expect_equal(breakpoints_gt_end, 1,
+                   info = paste("Test case", test_case, 
+                                "- Expected exactly 1 breakpoint > end_point, found", breakpoints_gt_end,
+                                "- S =", S, "- end_point =", end_point,
+                                "- Bvec =", paste(Bvec, collapse = ", ")))
+      
+      # The last breakpoint should be > end_point
+      expect_true(tail(Bvec, 1) > end_point,
+                  info = paste("Test case", test_case,
+                               "- Last breakpoint should be > end_point",
+                               "- Last Bvec =", tail(Bvec, 1), "- end_point =", end_point))
+      
+      # All breakpoints except the last should be <= end_point
+      if (S > 0) {
+        internal_breakpoints <- Bvec[1:S]
+        expect_true(all(internal_breakpoints <= end_point),
+                    info = paste("Test case", test_case,
+                                 "- All breakpoints except the last should be <= end_point",
+                                 "- Internal Bvec =", paste(internal_breakpoints, collapse = ", "),
+                                 "- end_point =", end_point))
+      }
+      
+      # Check that only the first element can be < start_point
+      breakpoints_lt_start <- sum(Bvec < start_point)
+      
+      # There should be at most 1 breakpoint < start_point (the first one)
+      expect_true(breakpoints_lt_start <= 1,
+                  info = paste("Test case", test_case,
+                               "- Expected at most 1 breakpoint < start_point, found", breakpoints_lt_start,
+                               "- S =", S, "- start_point =", start_point,
+                               "- Bvec =", paste(Bvec, collapse = ", ")))
+      
+      # If there is a breakpoint < start_point, it must be the first one
+      if (breakpoints_lt_start > 0) {
+        expect_true(Bvec[1] < start_point,
+                    info = paste("Test case", test_case,
+                                 "- If any breakpoint < start_point, it must be Bvec[1]",
+                                 "- Bvec[1] =", Bvec[1], "- start_point =", start_point))
+      }
+      
+      # All breakpoints except the first should be >= start_point
+      if (S > 0) {
+        breakpoints_after_first <- Bvec[2:(S+1)]
+        expect_true(all(breakpoints_after_first >= start_point),
+                    info = paste("Test case", test_case,
+                                 "- All breakpoints except the first should be >= start_point",
+                                 "- Bvec[2:", (S+1), "] =", paste(breakpoints_after_first, collapse = ", "),
+                                 "- start_point =", start_point))
+      }
+    }
   }
 })
 
@@ -595,5 +744,110 @@ test_that("iteration0_RJMCMC handles edge case with few observations", {
   expect_type(result, "list")
   expect_true(result$S > 0)
   expect_equal(length(result$Nvec), result$S)
+})
+
+test_that("iteration0_RJMCMC handles single observation in interval", {
+  # Run multiple test cases with different start_point, end_point, and t_star values
+  for (test_case in 1:200) {
+    # Vary parameters
+    seed_rjmcmc <- 6000 + test_case
+    num_logs <- sample(c(3, 4, 5, 6), 1)
+    
+    # Vary U, W, K
+    U <- sample(c(2, 3, 4, 5), 1)
+    W <- sample(c(2, 3, 4), 1)
+    K <- sample(c(2, 3, 4), 1)
+    
+    # Vary interval bounds - ensure we have room for a single observation
+    start_point <- runif(1, 0, 10)
+    end_point <- start_point + runif(1, 0.1, 5)
+    
+    # Place a single observation somewhere in the interval
+    obs_time <- runif(1, start_point, end_point)
+    T_seg <- obs_time
+    Y_seg <- sample(1:num_logs, 1)  # Random log type
+    
+    # Vary t_star - can be before, at, or slightly after start_point
+    # But must be <= obs_time (since initial_breakpoints filters T_seg > t_star)
+    t_star <- runif(1, start_point - 2, min(obs_time, start_point + 1))
+    
+    # Vary Smax
+    Smax <- sample(c(20, 30, 50, 100), 1)
+    
+    parameters <- create_test_parameters(U = U, W = W, K = K, num_logs = num_logs)
+    
+    set.seed(seed_rjmcmc)
+    result <- iteration0_RJMCMC(
+      T_seg, Y_seg,
+      minimum_n = 0,  # Allow minimum_n = 0 to ensure single observation is processed
+      start_point, end_point, t_star,
+      K = parameters$K, W = parameters$W, U = parameters$U,
+      empty_mix = TRUE,
+      probvec_V = parameters$probvec_V,
+      probvec_Z = parameters$probvec_Z,
+      probvec_Q = parameters$probvec_Q,
+      probvec_F = parameters$probvec_F,
+      alphavec = parameters$alphavec,
+      muvec = parameters$muvec,
+      keyvec = parameters$keyvec,
+      etavec = parameters$etavec,
+      key0vec = parameters$key0vec,
+      eta0vec = parameters$eta0vec,
+      lambdamat = parameters$lambdamat,
+      P0 = parameters$P0,
+      num_logs = num_logs,
+      max_range = 1.0,
+      Smax = Smax
+    )
+    
+    # Should produce valid output even with single observation
+    expect_type(result, "list")
+    expect_true("S" %in% names(result),
+                info = paste("Test case", test_case, "- S in result"))
+    expect_true("Bvec" %in% names(result),
+                info = paste("Test case", test_case, "- Bvec in result"))
+    
+    S <- result$S
+    expect_true(S > 0,
+                info = paste("Test case", test_case,
+                             "- S should be > 0, got S =", S,
+                             "- start_point =", start_point,
+                             "- end_point =", end_point,
+                             "- t_star =", t_star,
+                             "- obs_time =", obs_time))
+    
+    # Check dimensions
+    expect_equal(length(result$Bvec), Smax + 1,
+                 info = paste("Test case", test_case, "- Bvec length"))
+    expect_equal(length(result$Vvec), Smax,
+                 info = paste("Test case", test_case, "- Vvec length"))
+    expect_equal(length(result$Nvec), S,
+                 info = paste("Test case", test_case, "- Nvec length"))
+    
+    # Check breakpoint constraints
+    Bvec <- result$Bvec[1:(S+1)]
+    
+    # Only last breakpoint > end_point
+    breakpoints_gt_end <- sum(Bvec > end_point)
+    expect_equal(breakpoints_gt_end, 1,
+                 info = paste("Test case", test_case,
+                              "- Expected exactly 1 breakpoint > end_point, found", breakpoints_gt_end,
+                              "- Bvec =", paste(Bvec, collapse = ", ")))
+    
+    # Only first breakpoint can be < start_point
+    breakpoints_lt_start <- sum(Bvec < start_point)
+    expect_true(breakpoints_lt_start <= 1,
+                info = paste("Test case", test_case,
+                             "- Expected at most 1 breakpoint < start_point, found", breakpoints_lt_start,
+                             "- Bvec =", paste(Bvec, collapse = ", ")))
+    
+    # All breakpoints should be finite
+    expect_true(all(is.finite(Bvec)),
+                info = paste("Test case", test_case, "- All breakpoints finite"))
+    
+    # Breakpoints should be sorted
+    expect_true(all(diff(Bvec) >= 0),
+                info = paste("Test case", test_case, "- Breakpoints sorted"))
+  }
 })
 

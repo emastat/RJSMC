@@ -124,7 +124,7 @@ IntegerVector cpp_findInterval(NumericVector x, NumericVector breaks) {
 
   NumericVector::iterator it, pos;
   IntegerVector::iterator out_it;
-  
+
   int max_index = breaks.size() - 1;
 
   for(it = x.begin(), out_it = out.begin(); it != x.end();
