@@ -61,8 +61,10 @@ The output of the function is a list with the following elements
 }
 }
 \description{
-Given an time series of time-stamps and messages this function run a particle filter with
-Reversible Jump Markov Chain Montecarlo steps for approximating the posterior distribution of the following state dynamics variables
+Given an time series of time-stamps and messages this function
+run a particle filter with Reversible Jump Markov Chain Montecarlo
+steps for approximating the posterior distribution of the following
+state dynamics variables
 \itemize{
 \item Z, ruling the length of each non-empty segment
 \item Q, ruling the rate of occurrence of the messages in non-empty segments

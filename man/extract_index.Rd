@@ -18,9 +18,9 @@ extract_index(x, lower, upper)
 \value{
 3-element vector with:
 \describe{
-\item{element \link{0}}{length of the subsetted vector}
-\item{element \link{1}}{index of the first element of the subsetted vector }
-\item{element \link{2}}{index of the last element of the subsetted vector. If the last index is "-1" then no elements sastisfy the constraint}
+\item{element \code{[0]}}{length of the subsetted vector}
+\item{element \code{[1]}}{index of the first element of the subsetted vector }
+\item{element \code{[2]}}{index of the last element of the subsetted vector. If the last index is "-1" then no elements sastisfy the constraint}
 }
 }
 \description{

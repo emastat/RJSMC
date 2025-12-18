@@ -3,7 +3,7 @@
 \name{cpp_findInterval}
 \alias{cpp_findInterval}
 \title{Function to assign each element of a vector "x" to one of N  unique intervals defined through the
-vector of breakpoint B; B\link{j}<=x<\link{j+1} j=1...N+1. The out is "j"}
+vector of breakpoint B; \code{B[j]<=x<B[j+1]} j=1...N+1. The out is "j"}
 \usage{
 cpp_findInterval(x, breaks)
 }
@@ -13,9 +13,9 @@ cpp_findInterval(x, breaks)
 \item{breaks}{NumericVector. Vector containing the N+1 breakpoints}
 }
 \value{
-IntegerVector having the same size as x. Each element contains the index referring to the interval x\link{i} belongs to
+IntegerVector having the same size as x. Each element contains the index referring to the interval \code{x[i]} belongs to
 }
 \description{
 Function to assign each element of a vector "x" to one of N  unique intervals defined through the
-vector of breakpoint B; B\link{j}<=x<\link{j+1} j=1...N+1. The out is "j"
+vector of breakpoint B; \code{B[j]<=x<B[j+1]} j=1...N+1. The out is "j"
 }

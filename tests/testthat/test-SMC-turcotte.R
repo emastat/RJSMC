@@ -461,7 +461,7 @@ test_that("SMC_turcotte_cpp returns correct structure with english_words data", 
     skip("english_words data not available")
   }
   
-  n_particle <- 1000
+  n_particle <- 2000
   
   result <- SMC_turcotte_cpp(
     english_words$Yvec,

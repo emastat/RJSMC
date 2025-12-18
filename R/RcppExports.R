@@ -192,6 +192,7 @@ SMC_waste_free_cpp <- function(Yvec, Tvec, length_UI, n_particle, U, W, K, num_l
 #' @param minimum_n (const int&) minimum number of observations in a non-empty segment
 #' @param start_point (double, default is 0.0) start of the update interval
 #' @param end_point (double, default is 0.0) end of the update interval; to be used for partially observed segments
+#' @name shared_params_forward_backward
 NULL
 
 #' @title collapsed_full_conditional_Q
@@ -240,9 +241,9 @@ compute_posterior <- function(num_discr_intervals, num_particles, state_containe
 #' @param  upper (const double), the lower bound
 #' @return 3-element vector with:
 #' \describe{
-#' \item{element [0]}{length of the subsetted vector}
-#' \item{element [1]}{index of the first element of the subsetted vector }
-#' \item{element [2]}{index of the last element of the subsetted vector. If the last index is "-1" then no elements sastisfy the constraint}
+#' \item{element \code{[0]}}{length of the subsetted vector}
+#' \item{element \code{[1]}}{index of the first element of the subsetted vector }
+#' \item{element \code{[2]}}{index of the last element of the subsetted vector. If the last index is "-1" then no elements sastisfy the constraint}
 #' }
 extract_index <- function(x, lower, upper) {
     .Call(`_RJSMC_extract_index`, x, lower, upper)
@@ -280,6 +281,7 @@ extract_index <- function(x, lower, upper) {
 #' @param minimum_n (const int&) minimum number of observations in a non-empty segment
 #' @param start_point (double, default is 0.0) start of the update interval
 #' @param end_point (double, default is 0.0) end of the update interval; to be used for partially observed segments
+#' @name shared_params_forward_backward_2
 NULL
 
 #' @title full_conditional_F
@@ -295,6 +297,7 @@ NULL
 #' \item{F_new}{int, the sample F state for the selected segment}
 #' \item{eval_densF}{double, value of the  log full conditional for either the new F sampled of the current F inputed ( depending on sample_F)}
 #' }
+#' @name full_conditional_F
 NULL
 
 full_conditional_F <- function(F, L, key0vec, eta0vec, probvec_F, sample_F = FALSE) {
@@ -322,6 +325,7 @@ full_conditional_F <- function(F, L, key0vec, eta0vec, probvec_F, sample_F = FAL
 #' \item{V_new}{int, the sample Vstate for the selected segment or the one inputed}
 #' \item{eval_densV}{double, value of the log full conditional for either the new sampled V or the current Q inputed ( depending on sample_V)}
 #' }
+#' @name full_conditional_V
 NULL
 
 full_conditional_V <- function(V, U, num_logs, T_seg, Y_seg, LB, UB, lambdamat, probvec_V, V_left, P0, end_point = 0.0, open_segment = FALSE, sample_V = FALSE) {
@@ -342,6 +346,7 @@ full_conditional_V <- function(V, U, num_logs, T_seg, Y_seg, LB, UB, lambdamat, 
 #' \item{Z_new}{int, the sample Z state for the selected segment}
 #' \item{eval_densZ}{double, value of the  log full conditional for either the new Z sampled of the current Z inputed ( depending on sample_Z)}
 #' }
+#' @name full_conditional_Z
 NULL
 
 full_conditional_Z <- function(Z, K, L, keyvec, etavec, probvec_Z, sample_Z = FALSE) {
@@ -638,6 +643,7 @@ segment_box <- function(T_seg, Y_seg, V, Z, Q, F, U, K, W, LB, UB, num_logs, lam
 #' @param minimum_n (const int&) minimum number of observations in a non-empty segment
 #' @param start_point (double, default is 0.0) start of the update interval
 #' @param end_point (double, default is 0.0) end of the update interval; to be used for partially observed segments
+#' @name shared_params_shift
 NULL
 
 shift_function <- function(S, Tvec, Yvec, U, K, W, probvec_V, probvec_Z, probvec_Q, probvec_F, lambdamat, keyvec, etavec, key0vec, eta0vec, alphavec, muvec, num_logs, Bvec, Zvec, Qvec, Vvec, Fvec, Jss1, Js1s, P0, minimum_n, start_point = 0.0, end_point = 0.0) {
@@ -654,10 +660,10 @@ make_table <- function(X, K, inc_zero = FALSE) {
 }
 
 #' @title Function to assign each element of a vector "x" to one of N  unique intervals defined through the
-#' vector of breakpoint B; B[j]<=x<[j+1] j=1...N+1. The out is "j"
+#' vector of breakpoint B; \code{B[j]<=x<B[j+1]} j=1...N+1. The out is "j"
 #' @param x NumericVector. Vector  whose element need to ble allocated
 #' @param breaks NumericVector. Vector containing the N+1 breakpoints
-#' @return IntegerVector having the same size as x. Each element contains the index referring to the interval x[i] belongs to
+#' @return IntegerVector having the same size as x. Each element contains the index referring to the interval \code{x[i]} belongs to
 #' @export
 cpp_findInterval <- function(x, breaks) {
     .Call(`_RJSMC_cpp_findInterval`, x, breaks)
