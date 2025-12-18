@@ -11,9 +11,9 @@ using namespace Rcpp;
 //' @param  upper (const double), the lower bound
 //' @return 3-element vector with:
 //' \describe{
-//' \item{element [0]}{length of the subsetted vector}
-//' \item{element [1]}{index of the first element of the subsetted vector }
-//' \item{element [2]}{index of the last element of the subsetted vector. If the last index is "-1" then no elements sastisfy the constraint}
+//' \item{element \code{[0]}}{length of the subsetted vector}
+//' \item{element \code{[1]}}{index of the first element of the subsetted vector }
+//' \item{element \code{[2]}}{index of the last element of the subsetted vector. If the last index is "-1" then no elements sastisfy the constraint}
 //' }
 // [[Rcpp::export]]
 NumericVector extract_index(const NumericVector& x,

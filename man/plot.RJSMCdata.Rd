@@ -9,8 +9,8 @@
 \arguments{
 \item{d}{list containing two components,
 \describe{
-\item{time}  Vector of time-points of class 'Date'
-\item{labels} Vector of labels, categorical (or integer)
+\item{time}{Vector of time-points of class 'Date'}
+\item{labels}{Vector of labels, categorical (or integer)}
 }}
 }
 \value{

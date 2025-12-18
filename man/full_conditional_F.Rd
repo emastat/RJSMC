@@ -4,6 +4,9 @@
 \alias{full_conditional_F}
 \title{full_conditional_F
 Function for sampling the F state for a  new empty segment from its full conditional and/or evaluate it at the sampled point}
+\usage{
+full_conditional_F(F, L, key0vec, eta0vec, probvec_F, sample_F = FALSE)
+}
 \arguments{
 \item{F}{(const int&) Value of the current F if present; if not set it 0.}
 

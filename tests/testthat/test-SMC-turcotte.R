@@ -454,47 +454,47 @@ validate_SMC_turcotte_output <- function(result, n_particle) {
 #   }, NA)
 # })
 
-test_that("SMC_turcotte_cpp returns correct structure with english_words data", {
-  english_words <- load_english_words_data()
+# test_that("SMC_turcotte_cpp returns correct structure with english_words data", {
+#   english_words <- load_english_words_data()
   
-  if (is.null(english_words)) {
-    skip("english_words data not available")
-  }
+#   if (is.null(english_words)) {
+#     skip("english_words data not available")
+#   }
   
-  n_particle <- 2000
+#   n_particle <- 2000
   
-  result <- SMC_turcotte_cpp(
-    english_words$Yvec,
-    english_words$Tvec,
-    length_UI = 1.5,
-    n_particle = n_particle,
-    U = english_words$U,
-    W = english_words$W,
-    K = english_words$K,
-    num_logs = english_words$num_logs,
-    lambdamat = english_words$lambdamat,
-    keyvec = english_words$keyvec,
-    etavec = english_words$etavec,
-    key0vec = english_words$key0vec,
-    eta0vec = english_words$eta0vec,
-    alphavec = english_words$alphavec,
-    muvec = english_words$muvec,
-    probvec_V = english_words$probvec_V,
-    probvec_Z = english_words$probvec_Z,
-    probvec_Q = english_words$probvec_Q,
-    probvec_F = english_words$probvec_F,
-    P0 = english_words$P0,
-    minimum_n = english_words$minimum_n,
-    Jss1 = 1/3,
-    Js1s = 1/3,
-    Smax = 150,
-    n_ite = 20000,
-    burn_in = 5000,
-    thinning = 5
-  )
+#   result <- SMC_turcotte_cpp(
+#     english_words$Yvec,
+#     english_words$Tvec,
+#     length_UI = 1.5,
+#     n_particle = n_particle,
+#     U = english_words$U,
+#     W = english_words$W,
+#     K = english_words$K,
+#     num_logs = english_words$num_logs,
+#     lambdamat = english_words$lambdamat,
+#     keyvec = english_words$keyvec,
+#     etavec = english_words$etavec,
+#     key0vec = english_words$key0vec,
+#     eta0vec = english_words$eta0vec,
+#     alphavec = english_words$alphavec,
+#     muvec = english_words$muvec,
+#     probvec_V = english_words$probvec_V,
+#     probvec_Z = english_words$probvec_Z,
+#     probvec_Q = english_words$probvec_Q,
+#     probvec_F = english_words$probvec_F,
+#     P0 = english_words$P0,
+#     minimum_n = english_words$minimum_n,
+#     Jss1 = 1/3,
+#     Js1s = 1/3,
+#     Smax = 150,
+#     n_ite = 20000,
+#     burn_in = 5000,
+#     thinning = 5
+#   )
   
-  validate_SMC_turcotte_output(result, n_particle)
-})
+#   validate_SMC_turcotte_output(result, n_particle)
+# })
 
 
 
@@ -681,3 +681,42 @@ test_that("SMC_turcotte_cpp returns correct structure with english_words data", 
 #   validate_SMC_turcotte_output(result, n_particle)
 # })
 
+
+####### TEST REAL DATA
+
+test_that("SMC_turcotte_cpp returns correct structure with real_data data", {
+  
+  n_particle <- 2000
+  
+  result <- SMC_turcotte_cpp(
+    real_data$Yvec,
+    real_data$Tvec,
+    length_UI = 5,
+    n_particle = n_particle,
+    U = real_data$U,
+    W = real_data$W,
+    K = real_data$K,
+    num_logs = real_data$num_logs,
+    lambdamat = real_data$lambdamat,
+    keyvec = real_data$keyvec,
+    etavec = real_data$etavec,
+    key0vec = real_data$key0vec,
+    eta0vec = real_data$eta0vec,
+    alphavec = real_data$alphavec,
+    muvec = real_data$muvec,
+    probvec_V = real_data$probvec_V,
+    probvec_Z = real_data$probvec_Z,
+    probvec_Q = real_data$probvec_Q,
+    probvec_F = real_data$probvec_F,
+    P0 = real_data$P0,
+    minimum_n = real_data$minimum_n,
+    Jss1 = 1/3,
+    Js1s = 1/3,
+    Smax = 150,
+    n_ite = 20000,
+    burn_in = 5000,
+    thinning = 5
+  )
+  
+  validate_SMC_turcotte_output(result, n_particle)
+})

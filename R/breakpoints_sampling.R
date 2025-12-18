@@ -1,18 +1,16 @@
-#' @title  Function for generating a sample of Breakpoints inside an observational interval
-#' Function for generating breakpoints from a kernel density inside an interval
+#' @title Function for generating a sample of Breakpoints inside an observational interval
+#' 
+#' @description Function for generating breakpoints from a kernel density inside an interval
 #'
-#' @param  start_point start point for the segment (t_star)
-#' @param  end_point end point of the observational interval
 #' @param breakpoint_list list with breakpoints vectors sampled during the RJSMCMC
 #' @param sample_size number of samples to generate
 #' @return list called output with following objects
 #' \describe{
 #' \item{logdens}{vector with log density value for  the generate breakpoint vector, for each sample }
 #' \item{ S.samp}{list of vectors with the generated breakpoints in each sample }
+#' }
 #' @export
 breakpoints_sampling = function(
-    start_point,
-    end_point,
     breakpoint_list,
     sample_size
 )
@@ -26,14 +24,12 @@ breakpoints_sampling = function(
   sorted_breakpoints = sort(breakpoints_flat)
   sorted_breakpoints = unique(sorted_breakpoints)
   jittered_breakpoints = jitter(sorted_breakpoints,amount = 0.01)
-  jittered_breakpoints_inside = jittered_breakpoints
-  #jittered_breakpoints_inside = jittered_breakpoints[(jittered_breakpoints>start_point) &
-  #                                          (jittered_breakpoints<end_point)]
-
-  start_point_fix = min(jittered_breakpoints)-0.01
-  end_point_fix = max(jittered_breakpoints)+ 0.01
+  
+  start_point = min(jittered_breakpoints)-0.01
+  end_point = max(jittered_breakpoints)+ 0.01
+  
   #and remove start_point
-  Sv = jittered_breakpoints_inside - start_point_fix
+  Sv = jittered_breakpoints - start_point
 
   if(length(Sv)==1){Sv = c(Sv,Sv)}
 
@@ -41,19 +37,17 @@ breakpoints_sampling = function(
 
     print("this is Sv")
     print(Sv)
-    print("this is start_point_fix")
-    print(start_point_fix)
-    print("this is end_point_fix")
-    print(end_point_fix)
-    print("this is jittered_breakpoints_inside")
-    print(jittered_breakpoints_inside)
+    print("this is start_point")
+    print(start_point)
+    print("this is end_point")
+    print(end_point)
     print("this is jittered_breakpoints")
     print(jittered_breakpoints)
     stop("Breakpoint_sampling.R Breakpoints with value <=0 have been found. Breakpoint must be positive")
   }
 
   # length of the observational interval
-  delta = end_point_fix - start_point_fix
+  delta = end_point - start_point
 
   #  apply logit transformation. Allow breakpoint to be in (-inf, +inf)
   Sv.tr = log((Sv/delta)/(1-Sv/delta))
@@ -65,11 +59,11 @@ breakpoints_sampling = function(
     print("this is Sv")
     print(Sv)
     print("this is start_point")
-    print(start_point_fix)
+    print(start_point)
     print("this is end_point")
-    print(end_point_fix)
-    print("this is jittered_breakpoints_inside")
-    print(jittered_breakpoints_inside)
+    print(end_point)
+    print("this is jittered_breakpoints")
+    print(jittered_breakpoints)
     print("this is delta")
     print(delta)
       
@@ -91,25 +85,43 @@ breakpoints_sampling = function(
   mclust_error = TRUE
   mclust_attempts = 0
 
-  while(mclust_error){
-    mclust_attempts <- mclust_attempts + 1
+  # while(mclust_error){
+  #   mclust_attempts <- mclust_attempts + 1
 
-    result <- try({
-      fit = Mclust(Sv.tr)
-                })
+  #   result <- try({
+  #     fit = Mclust(Sv.tr, verbose = FALSE)
+  #               }, silent = TRUE)
 
-    if (class(result) == "try-error"){
+  #   if (class(result) == "try-error"){
+
+  #     print("this is breakpoint_list")
+  #     print(breakpoint_list)
+  #     print("this is Sv")
+  #     print(Sv)
+  #     print("this is start_point")
+  #     print(start_point_fix)
+  #     print("this is end_point")
+  #     print(end_point_fix)
+  #     print("this is jittered_breakpoints")
+  #     print(jittered_breakpoints)
+  #   }
+  # }else{
+  #   mclust_error = FALSE
+  # }
+
+    # ---- QUIET MCLUST FIT (NO PROGRESS BAR) ----
+  fit <- tryCatch(
+    Mclust(Sv.tr, verbose = FALSE),
+    error = function(e) {
 
       print("this is breakpoint_list")
       print(breakpoint_list)
       print("this is Sv")
       print(Sv)
       print("this is start_point")
-      print(start_point_fix)
+      print(start_point)
       print("this is end_point")
-      print(end_point_fix)
-      print("this is jittered_breakpoints_inside")
-      print(jittered_breakpoints_inside)
+      print(end_point)
       print("this is jittered_breakpoints")
       print(jittered_breakpoints)
       print("this is delta")
@@ -117,16 +129,9 @@ breakpoints_sampling = function(
       print("this is Sv.tr")
       print(Sv.tr)
 
-      stop("breakpoint_sampling.R --> check line 57")
-
-    }else{
-
-      # fit MVN mixture to the breakpoints
-      fit = Mclust(Sv.tr, verbose = FALSE)
-      mclust_error = FALSE
-
+      stop("breakpoint_sampling.R --> check line 57\n", conditionMessage(e))
     }
-  }
+  )
 
   # simulate number of breakpoints from a negative binomial, based on the empirical counts
   # of breakpoints in the particles
@@ -173,11 +178,9 @@ breakpoints_sampling = function(
       
       # Suppress progress bar using capture.output (per Stack Overflow solution)
       # Assign result inside capture.output, then wrap in invisible to discard output
-      fit_result <- NULL
-      invisible(capture.output(
-        fit_result <- suppressWarnings(fitdist(empirical_breakpoint_dist, "nbinom"))
-      ))
-      fit_result
+      
+      suppressWarnings(fitdist(empirical_breakpoint_dist, "nbinom"))
+      
     }, error = function(e) {
       elapsed <- as.numeric(Sys.time() - start_time, units = "secs")
       
@@ -296,7 +299,7 @@ breakpoints_sampling = function(
 
       }
 
-      S.samp[[i]] = unique(c(0, foo_exp, end_point_fix-start_point_fix))
+      S.samp[[i]] = unique(c(0, foo_exp, end_point-start_point))
 
       # START CODE TO DELETE
       if (any(is.nan(S.samp[[i]]))) {
@@ -306,7 +309,7 @@ breakpoints_sampling = function(
 
     }else{
 
-      foo = c(0, end_point_fix-start_point_fix)
+      foo = c(0, end_point-start_point)
       S.samp[[i]] = foo
 
 

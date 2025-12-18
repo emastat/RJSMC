@@ -2,8 +2,7 @@
 % Please edit documentation in R/breakpoints_sampling.R
 \name{breakpoints_sampling}
 \alias{breakpoints_sampling}
-\title{Function for generating a sample of Breakpoints inside an observational interval
-Function for generating breakpoints from a kernel density inside an interval}
+\title{Function for generating a sample of Breakpoints inside an observational interval}
 \usage{
 breakpoints_sampling(start_point, end_point, breakpoint_list, sample_size)
 }
@@ -22,7 +21,7 @@ list called output with following objects
 \item{logdens}{vector with log density value for  the generate breakpoint vector, for each sample }
 \item{ S.samp}{list of vectors with the generated breakpoints in each sample }
 }
+}
 \description{
-Function for generating a sample of Breakpoints inside an observational interval
 Function for generating breakpoints from a kernel density inside an interval
 }

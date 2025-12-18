@@ -4,6 +4,24 @@
 \alias{full_conditional_V}
 \title{full_conditional_V
 Function for sampling the V  state for a  new non-empty segment from its full conditional and/or evaluate it at the sampled point}
+\usage{
+full_conditional_V(
+  V,
+  U,
+  num_logs,
+  T_seg,
+  Y_seg,
+  LB,
+  UB,
+  lambdamat,
+  probvec_V,
+  V_left,
+  P0,
+  end_point = 0,
+  open_segment = FALSE,
+  sample_V = FALSE
+)
+}
 \arguments{
 \item{V}{(const int&) Value of the current V if present; if not set it 0.}
 
@@ -25,11 +43,11 @@ Function for sampling the V  state for a  new non-empty segment from its full co
 
 \item{V_left}{V value for the previous segment}
 
-\item{open_segment}{(const bool, default is false) if false  the segment is considered totally observed. If true the semgent is considered partially observed; this affects the likelihood computation}
+\item{P0}{(const double&) Probability to observe an empty segment after a non-empty one}
 
 \item{end_point}{(double, default is 0.0) to be used for partially observed segments; declares the point where the stops to be observed}
 
-\item{P0}{(const double&) Probability to observe an empty segment after a non-empty one}
+\item{open_segment}{(const bool, default is false) if false  the segment is considered totally observed. If true the semgent is considered partially observed; this affects the likelihood computation}
 
 \item{sample_V}{( const bool=false) if true a new V is sampled and the full conditional is evaluated at the new value. If false (by default) the full condititional is evaluated at the input V}
 }

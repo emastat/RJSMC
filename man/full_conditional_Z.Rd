@@ -4,6 +4,9 @@
 \alias{full_conditional_Z}
 \title{full_conditional_Z
 Function for sampling the Z state for a  new non-empty segment from its full conditional and/or evaluate it at the sampled point}
+\usage{
+full_conditional_Z(Z, K, L, keyvec, etavec, probvec_Z, sample_Z = FALSE)
+}
 \arguments{
 \item{Z}{(const int&) Value of the current Z if present; if not set it 0.}
 

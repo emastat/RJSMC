@@ -192,7 +192,7 @@ SMC_waste_free_cpp <- function(Yvec, Tvec, length_UI, n_particle, U, W, K, num_l
 #' @param minimum_n (const int&) minimum number of observations in a non-empty segment
 #' @param start_point (double, default is 0.0) start of the update interval
 #' @param end_point (double, default is 0.0) end of the update interval; to be used for partially observed segments
-#' @name shared_params_forward_backward
+#' @name backward_function
 NULL
 
 #' @title collapsed_full_conditional_Q
@@ -281,7 +281,7 @@ extract_index <- function(x, lower, upper) {
 #' @param minimum_n (const int&) minimum number of observations in a non-empty segment
 #' @param start_point (double, default is 0.0) start of the update interval
 #' @param end_point (double, default is 0.0) end of the update interval; to be used for partially observed segments
-#' @name shared_params_forward_backward_2
+#' @name forward_function
 NULL
 
 #' @title full_conditional_F
@@ -298,8 +298,6 @@ NULL
 #' \item{eval_densF}{double, value of the  log full conditional for either the new F sampled of the current F inputed ( depending on sample_F)}
 #' }
 #' @name full_conditional_F
-NULL
-
 full_conditional_F <- function(F, L, key0vec, eta0vec, probvec_F, sample_F = FALSE) {
     .Call(`_RJSMC_full_conditional_F`, F, L, key0vec, eta0vec, probvec_F, sample_F)
 }
@@ -326,8 +324,6 @@ full_conditional_F <- function(F, L, key0vec, eta0vec, probvec_F, sample_F = FAL
 #' \item{eval_densV}{double, value of the log full conditional for either the new sampled V or the current Q inputed ( depending on sample_V)}
 #' }
 #' @name full_conditional_V
-NULL
-
 full_conditional_V <- function(V, U, num_logs, T_seg, Y_seg, LB, UB, lambdamat, probvec_V, V_left, P0, end_point = 0.0, open_segment = FALSE, sample_V = FALSE) {
     .Call(`_RJSMC_full_conditional_V`, V, U, num_logs, T_seg, Y_seg, LB, UB, lambdamat, probvec_V, V_left, P0, end_point, open_segment, sample_V)
 }
@@ -347,8 +343,6 @@ full_conditional_V <- function(V, U, num_logs, T_seg, Y_seg, LB, UB, lambdamat, 
 #' \item{eval_densZ}{double, value of the  log full conditional for either the new Z sampled of the current Z inputed ( depending on sample_Z)}
 #' }
 #' @name full_conditional_Z
-NULL
-
 full_conditional_Z <- function(Z, K, L, keyvec, etavec, probvec_Z, sample_Z = FALSE) {
     .Call(`_RJSMC_full_conditional_Z`, Z, K, L, keyvec, etavec, probvec_Z, sample_Z)
 }
@@ -643,9 +637,7 @@ segment_box <- function(T_seg, Y_seg, V, Z, Q, F, U, K, W, LB, UB, num_logs, lam
 #' @param minimum_n (const int&) minimum number of observations in a non-empty segment
 #' @param start_point (double, default is 0.0) start of the update interval
 #' @param end_point (double, default is 0.0) end of the update interval; to be used for partially observed segments
-#' @name shared_params_shift
-NULL
-
+#' @name shift_function
 shift_function <- function(S, Tvec, Yvec, U, K, W, probvec_V, probvec_Z, probvec_Q, probvec_F, lambdamat, keyvec, etavec, key0vec, eta0vec, alphavec, muvec, num_logs, Bvec, Zvec, Qvec, Vvec, Fvec, Jss1, Js1s, P0, minimum_n, start_point = 0.0, end_point = 0.0) {
     invisible(.Call(`_RJSMC_shift_function`, S, Tvec, Yvec, U, K, W, probvec_V, probvec_Z, probvec_Q, probvec_F, lambdamat, keyvec, etavec, key0vec, eta0vec, alphavec, muvec, num_logs, Bvec, Zvec, Qvec, Vvec, Fvec, Jss1, Js1s, P0, minimum_n, start_point, end_point))
 }

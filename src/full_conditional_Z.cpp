@@ -17,7 +17,7 @@ using namespace Rcpp;
 //' \item{Z_new}{int, the sample Z state for the selected segment}
 //' \item{eval_densZ}{double, value of the  log full conditional for either the new Z sampled of the current Z inputed ( depending on sample_Z)}
 //' }
-
+//' @name full_conditional_Z
 // [[Rcpp::export]]
 List full_conditional_Z(const int& Z,
                         const int& K,

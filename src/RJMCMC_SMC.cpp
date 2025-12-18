@@ -684,8 +684,6 @@ void     RJMCMC_SMC(const NumericVector& T_seg,
     int sample_size = 5 ;
 
     List generated_breakpoint_list = breakpoints_sampling(
-                         Named("start_point") = start_point,
-                         Named("end_point") = end_point,
                          Named("breakpoint_list") = selected_breakpoint_vector,
                          Named("sample_size") = sample_size) ;
 

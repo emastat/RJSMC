@@ -2,8 +2,8 @@
 #'
 #' @param  d list containing two components,
 #' \describe{
-#' \item{time}  Vector of time-points of class 'Date'
-#' \item{labels} Vector of labels, categorical (or integer)
+#' \item{time}{Vector of time-points of class 'Date'}
+#' \item{labels}{Vector of labels, categorical (or integer)}
 #' }
 #' @return list with following objects
 #' \describe{

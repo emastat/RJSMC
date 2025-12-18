@@ -26,7 +26,7 @@ using namespace Rcpp;
 //' \item{V_new}{int, the sample Vstate for the selected segment or the one inputed}
 //' \item{eval_densV}{double, value of the log full conditional for either the new sampled V or the current Q inputed ( depending on sample_V)}
 //' }
-
+//' @name full_conditional_V
 // [[Rcpp::export]]
 List full_conditional_V(const int& V,
                         const int& U,

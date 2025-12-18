@@ -16,7 +16,7 @@ using namespace Rcpp;
 //' \item{F_new}{int, the sample F state for the selected segment}
 //' \item{eval_densF}{double, value of the  log full conditional for either the new F sampled of the current F inputed ( depending on sample_F)}
 //' }
-
+//' @name full_conditional_F
 // [[Rcpp::export]]
 List full_conditional_F(const int& F,
                         const double& L,

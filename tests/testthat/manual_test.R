@@ -183,3 +183,36 @@ result <- SMC_turcotte_cpp(
   burn_in = 5000,
   thinning = 5
 )
+
+
+n_particle <- 1000
+  
+result <- SMC_turcotte_cpp(
+  real_data$Yvec[1:100],
+  real_data$Tvec[1:100],
+  length_UI = 5,
+  n_particle = n_particle,
+  U = real_data$U,
+  W = real_data$W,
+  K = real_data$K,
+  num_logs = real_data$num_logs,
+  lambdamat = real_data$lambdamat,
+  keyvec = real_data$keyvec,
+  etavec = real_data$etavec,
+  key0vec = real_data$key0vec,
+  eta0vec = real_data$eta0vec,
+  alphavec = real_data$alphavec,
+  muvec = real_data$muvec,
+  probvec_V = real_data$probvec_V,
+  probvec_Z = real_data$probvec_Z,
+  probvec_Q = real_data$probvec_Q,
+  probvec_F = real_data$probvec_F,
+  P0 = real_data$P0,
+  minimum_n = real_data$minimum_n,
+  Jss1 = 1/3,
+  Js1s = 1/3,
+  Smax = 150,
+  n_ite = 20000,
+  burn_in = 5000,
+  thinning = 5
+)

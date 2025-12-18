@@ -40,6 +40,7 @@ using namespace Rcpp;
 //' @param minimum_n (const int&) minimum number of observations in a non-empty segment
 //' @param start_point (double, default is 0.0) start of the update interval
 //' @param end_point (double, default is 0.0) end of the update interval; to be used for partially observed segments
+//' @name forward_function
 
 void         forward_function(            int& S,
                                     const NumericVector& Tvec,
