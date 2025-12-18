@@ -4,13 +4,9 @@
 \alias{breakpoints_sampling}
 \title{Function for generating a sample of Breakpoints inside an observational interval}
 \usage{
-breakpoints_sampling(start_point, end_point, breakpoint_list, sample_size)
+breakpoints_sampling(breakpoint_list, sample_size)
 }
 \arguments{
-\item{start_point}{start point for the segment (t_star)}
-
-\item{end_point}{end point of the observational interval}
-
 \item{breakpoint_list}{list with breakpoints vectors sampled during the RJSMCMC}
 
 \item{sample_size}{number of samples to generate}
