@@ -185,12 +185,12 @@ result <- SMC_turcotte_cpp(
 )
 
 
-n_particle <- 1000
+n_particle <- 300
   
 result <- SMC_turcotte_cpp(
   real_data$Yvec[1:100],
   real_data$Tvec[1:100],
-  length_UI = 5,
+  length_UI = 2,
   n_particle = n_particle,
   U = real_data$U,
   W = real_data$W,
@@ -212,7 +212,7 @@ result <- SMC_turcotte_cpp(
   Jss1 = 1/3,
   Js1s = 1/3,
   Smax = 150,
-  n_ite = 20000,
-  burn_in = 5000,
+  n_ite = 2000,
+  burn_in = 500,
   thinning = 5
 )

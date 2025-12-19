@@ -88,6 +88,10 @@ using namespace Rcpp;
 
   double first_point =  floor( Tvec[0])   ;
 
+  if (first_point < 0) {
+    stop("time series must start from a positive time point");
+  }
+
   double last_point =  max(Tvec) + length_UI  ;
 
   NumericVector UI_bounds = as<NumericVector>(seq_cpp(first_point,last_point,length_UI) ); // boundaries for the Update Intervals
@@ -96,11 +100,11 @@ using namespace Rcpp;
 
   IntegerVector V_last_complete = rep(1,n_particle) ; // V state for the last complete segment of each particle
 
-  double t_star_empty_seg = 0 ; //estimate of the last breakpoint at the end of each update interval for empty segments
-  double t_star_non_empty_seg = 0 ; //estimate of the last breakpoint at the end of each update interval for non-empty segments
+  double t_star_empty_seg = first_point ; //estimate of the last breakpoint at the end of each update interval for empty segments
+  double t_star_non_empty_seg = first_point ; //estimate of the last breakpoint at the end of each update interval for non-empty segments
 
   // last simulated changepoint WITHIN the Update Interval, at the previous SMC iteration
-  NumericVector B_last = rep(0.0,n_particle) ;
+  NumericVector B_last = rep(first_point, n_particle) ;
 
   int n_UI = UI_bounds.size()-1 ; // number of Update intervals
 
