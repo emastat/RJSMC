@@ -16,6 +16,10 @@ weigths_correction(
   eta0vec,
   probvec_Z,
   probvec_F,
+  probvec_Q,
+  alphavec,
+  muvec,
+  W,
   P0
 )
 }
@@ -40,7 +44,17 @@ weigths_correction(
 
 \item{probvec_F}{(const NumericVector&) probability mass for the F state}
 
+\item{probvec_Q}{(const NumericVector&) probability mass for the Q state}
+
+\item{alphavec}{(const NumericVector&) Shape parameters ruling the rate of occurrence of segment for the different levels of the Q state}
+
+\item{muvec}{(const NumericVector&) Mean parameters ruling the rate of occurrence of segment for the different levels of the Q state}
+
+\item{W}{(const int&) Number of levels for the Q state}
+
 \item{P0}{(const double&) Probability to observe an empty segment after a non-empty one}
+
+\item{minimum_n}{(const int&) minimum number of observations that must be observed in a non-empty segment}
 }
 \value{
 correction weight (double)

@@ -147,6 +147,22 @@ List initial_state ( const NumericVector& T_seg,
 
          Vvec[i] = out_V["V"] ;
 
+         // ENHANCED BUG DETECTION CHECK: Open segment (last segment) with zero observations must have V = 0
+         // Directly count observations in the open segment [LB, end_point)
+         int actual_count_open = 0;
+         if(i == S-1){
+           double LB_seg = Bvec[i];
+           for(int k = 0; k < T_seg.size(); k++){
+             if(T_seg[k] >= LB_seg && T_seg[k] < end_point){
+               actual_count_open++;
+             }
+           }
+           if((Nvec[i] == 0 || actual_count_open == 0) && Vvec[i] != 0){
+             Rcpp::stop("BUG DETECTED in initial_state: Open segment (last segment) with zero observations has non-zero V state. Segment index=%d, V=%d, Nvec[%d]=%.0f, actual_count=%d, LB=%.6f, UB=%.6f, end_point=%.6f, T_seg_size=%d", 
+                        i, Vvec[i], i, Nvec[i], actual_count_open, Bvec[i], Bvec[i+1], end_point, T_seg.size());
+           }
+         }
+
          V_left = out_V["V"] ;
 
          //sample Z

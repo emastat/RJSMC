@@ -128,6 +128,32 @@ List        segment_box(const NumericVector& T_seg,
                                      open_segment,
                                      sample_state);
 
+    // ENHANCED BUG DETECTION CHECK: Open segment with zero observations must have V = 0
+    // Directly count observations in the segment
+    int actual_count_seg = 0;
+    if(open_segment == true){
+      // For open segments, count observations in [LB, end_point)
+      for(int k = 0; k < T_seg.size(); k++){
+        if(T_seg[k] >= LB && T_seg[k] < end_point){
+          actual_count_seg++;
+        }
+      }
+    } else {
+      // For closed segments, count observations in [LB, UB)
+      for(int k = 0; k < T_seg.size(); k++){
+        if(T_seg[k] >= LB && T_seg[k] < UB){
+          actual_count_seg++;
+        }
+      }
+    }
+    
+    int V_value = as<int>(out_V["V"]);
+    // Check both the extracted count and the actual count
+    if(open_segment == true && (count == 0.0 || actual_count_seg == 0) && V_value != 0){
+      Rcpp::stop("BUG DETECTED in segment_box: Open segment with zero observations has non-zero V state. V=%d, extracted_count=%.0f, actual_count=%d, LB=%.6f, UB=%.6f, end_point=%.6f, T_seg_size=%d", 
+                 V_value, count, actual_count_seg, LB, UB, end_point, T_seg.size());
+    }
+
     //sample V and or evaluate the full conditional and the posterior distribution in V (either new or old)
 
     List out_Z = full_conditional_Z(Z,

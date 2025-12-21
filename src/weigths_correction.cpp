@@ -16,6 +16,11 @@ using namespace Rcpp;
 //' @param eta0vec (const NumericVector&) Mean parameters ruling the length of empty segments in different levels of F state
 //' @param probvec_Z (const NumericVector&) probability mass for the Z state
 //' @param probvec_F (const NumericVector&) probability mass for the F state
+//' @param probvec_Q (const NumericVector&) probability mass for the Q state
+//' @param alphavec (const NumericVector&) Shape parameters ruling the rate of occurrence of segment for the different levels of the Q state
+//' @param muvec (const NumericVector&) Mean parameters ruling the rate of occurrence of segment for the different levels of the Q state
+//' @param minimum_n (const int&) minimum number of observations that must be observed in a non-empty segment
+//' @param W (const int&) Number of levels for the Q state
 //' @param P0 (const double&) Probability to observe an empty segment after a non-empty one
 //' @return correction weight (double)
 //' @export
@@ -31,20 +36,24 @@ double weigths_correction(const NumericVector& T_seg,
                            const NumericVector& eta0vec,
                            const NumericVector& probvec_Z,
                            const NumericVector& probvec_F,
+                           const NumericVector& probvec_Q,
+                           const NumericVector& alphavec,
+                           const NumericVector& muvec,
+                           const int& W,
                            const double& P0){
 
 
   // initialize the correction Value
 
-  double weight_m = 0.0 ;
-  double correction_value = 0.0 ;
-
+  double weight = 0.0 ; // final weight
+  double weight_m = 0.0 ; // weight for current sample
+  double weight_i = 0.0; // weight for current segment
+  
   int F_levels = probvec_F.length() ;
 
   // initialize state value (it will be either Z or F)
 
   int state_new=0 ;
-
   int initial_state = 0 ;
 
   // initialize left and right bound of the segment
@@ -67,21 +76,18 @@ double weigths_correction(const NumericVector& T_seg,
   List Bvec_list = break_sample_output["S.samp"] ;
 
   // extract vector with log densities of the breakpoints vectors generated during Importance Sampling
-
   NumericVector IS_log_density_vec = break_sample_output["log_density"] ;
 
-  // loop over the Importance sampling iterations
+  // loop over the Importance sampling samples
 
   for(int m=0; m<M; m++){
 
-    //retrieve breakpoint vector for iteration m
+    //retrieve breakpoint vector for sample m
     NumericVector Bvec_m = Bvec_list[m] ;
 
-    //retrieve importance sampling log density for iteration m
+    //retrieve importance sampling log density for sample m
     double IS_log_density = IS_log_density_vec[m] ;
 
-    // set weight_m to 0.0
-    weight_m = 0.0 ;
 
     //loop over the segments
     for(int i=0; i < (Bvec_m.length()-1); i++){
@@ -111,8 +117,6 @@ double weigths_correction(const NumericVector& T_seg,
 
         break;
 
-        // return( List::create(Named("is_legal")=false,
-        //                      Named("ldens")=0.0)) ;
 
       }else{
 
@@ -126,6 +130,21 @@ double weigths_correction(const NumericVector& T_seg,
           // ldens_L: prior density for the length of the selected segment
           ldens_L = R::dgamma( L_new, keyvec[state_new-1],etavec[ state_new-1 ]/keyvec[state_new-1],true );
 
+          //TIME-STAMPS POSITION: T_s1... Ts,n_s
+          double ldens_tmsp =std::lgamma(count + 1) - count * std::log(L_new)  ;
+
+          // sample Q
+          int Q_new = as<int>( Rcpp::sample( W, 1, false, probvec_Q, true ) ) ;
+
+          // ldens_count: (collapsed) log density for the count of obs inside a CLOSED segment
+          double ldens_count = R::dnbinom(count,
+                                          alphavec[Q_new-1],
+                                          (alphavec[Q_new-1]/muvec[Q_new-1])/(alphavec[Q_new-1]/muvec[Q_new-1]+ L_new)
+                                          ,true) ;
+
+          // compute the  log weight for the current segment                      
+          weight_i = ldens_tmsp + ldens_count + ldens_L ;
+
         }else{
 
           // sample F
@@ -134,42 +153,45 @@ double weigths_correction(const NumericVector& T_seg,
           // ldens_L: prior density for the length of the selected segment
           ldens_L = R::dgamma( L_new, key0vec[state_new-1] ,eta0vec[state_new-1]/key0vec[state_new-1],true );
 
+          // compute final correction value                                
+          weight_i = ldens_L ;
         }
-
-
+        
         // update weight_m
-        weight_m = weight_m + ldens_L ;
-
+        weight_m = weight_m + weight_i ;
 
       }
 
     }
 
-    //update correction value
-    correction_value = correction_value + (weight_m- IS_log_density) ;
+    // subtract the importance sampling log density from the weight for sample m
+    weight_m = weight_m - IS_log_density ;
+
+    //update final weight 
+    weight = weight_m +  std::exp(weight_m) ;
 
   }
 
   // START CODE TO REMOVE
-  if(NumericVector::is_na(correction_value)){
+  if(NumericVector::is_na(weight)){
 
-    stop("weights_correction.cpp --> correction_value is na");
-
-  }
-
-  if(Rcpp::traits::is_nan<REALSXP>(correction_value)){
-
-    stop("weights_correction.cpp -->  correction_value is NaN");
+    stop("weights_correction.cpp --> weight is na");
 
   }
 
-  if(Rcpp::traits::is_infinite<REALSXP>(correction_value)){
+  if(Rcpp::traits::is_nan<REALSXP>(weight)){
 
-    stop("weights_correction.cpp -->  correction_value is infinite");
+    stop("weights_correction.cpp -->  weight is NaN");
+
+  }
+
+  if(Rcpp::traits::is_infinite<REALSXP>(weight)){
+
+    stop("weights_correction.cpp -->  weight is infinite");
 
   }
   // END CODE TO REMOVE
 
-  return correction_value/M ;
+  return weight/M ;
 
 }

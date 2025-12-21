@@ -2,79 +2,61 @@ library(RJSMC)
 library(mclust)
 library(fitdistrplus)
 
-# load abb data and add the to the RJSMC package
-
-abb_data <- readRDS("/Users/emanueleuio/Desktop/di21_final.RDS")
-Tvec <- abb_data$time
-Yvec <- as.numeric(abb_data$label)
+# Load real_data from package
+data("real_data", package = "RJSMC")
 
 set.seed(22)
 
+# Prepare time series data
 ts_data <- list()
-ts_data$Yvec <- Yvec[1:1000]
-ts_data$Tvec <- Tvec[1:1000]
-lambdamat <- readRDS("/Users/emanueleuio/Desktop/parameter_values/lambdamat_par.RDS")
-keyvec <- readRDS("/Users/emanueleuio/Desktop/parameter_values/greenvec_par.RDS")
-etavec <-  readRDS("/Users/emanueleuio/Desktop/parameter_values/etavec_par.RDS")
-key0vec <- readRDS("/Users/emanueleuio/Desktop/parameter_values/greenvec_empty_par.RDS")
-eta0vec <-  readRDS("/Users/emanueleuio/Desktop/parameter_values/etavec_empty_par.RDS")
-alphavec <- readRDS("/Users/emanueleuio/Desktop/parameter_values/alphavec_par.RDS")
-muvec <- readRDS("/Users/emanueleuio/Desktop/parameter_values/muvec_par.RDS")
-probvec_Z <- readRDS("/Users/emanueleuio/Desktop/parameter_values/qvec_par.RDS")
-probvec_V <- readRDS("/Users/emanueleuio/Desktop/parameter_values/deltavec_par.RDS")
-probvec_F <- readRDS("/Users/emanueleuio/Desktop/parameter_values/epsivec_par.RDS")
-probvec_Q <- c(0.5,0.5)
-num_logs <- ncol(lambdamat)
-P0 <- readRDS("/Users/emanueleuio/Desktop/parameter_values/P0_par.RDS")
-minimum_n <- 0
-probvec_Z <- readRDS("/Users/emanueleuio/Desktop/parameter_values/qvec_par.RDS")
-probvec_V <- readRDS("/Users/emanueleuio/Desktop/parameter_values/deltavec_par.RDS")
-probvec_F <- readRDS("/Users/emanueleuio/Desktop/parameter_values/epsivec_par.RDS")
-probvec_Q <- c(0.5,0.5)
+ts_data$Yvec <- real_data$Yvec[1:1000]
+ts_data$Tvec <- real_data$Tvec[1:1000]
 
-K <- length(alphavec)
-U <- length(probvec_V)
-W <- 2
-
-
+# Prepare parameters from real_data
 parameters <- list()
-parameters$U <- U
-parameters$W <- W
-parameters$K <- K
-parameters$lambdamat <- lambdamat
-parameters$keyvec <- keyvec
-parameters$etavec <- etavec
-parameters$key0vec <- key0vec
-parameters$eta0vec <- eta0vec
-parameters$alphavec <- alphavec
-parameters$muvec <- muvec
-parameters$probvec_V <- probvec_V
-parameters$probvec_Z <- probvec_Z
-parameters$probvec_Q <- probvec_Q
-parameters$probvec_F <- probvec_F
-parameters$P0 <- P0
-parameters$minimum_n <- 0
+parameters$U <- real_data$U
+parameters$W <- real_data$W
+parameters$K <- real_data$K
+parameters$lambdamat <- real_data$lambdamat
+parameters$keyvec <- real_data$keyvec
+parameters$etavec <- real_data$etavec
+parameters$key0vec <- real_data$key0vec
+parameters$eta0vec <- real_data$eta0vec
+parameters$alphavec <- real_data$alphavec
+parameters$muvec <- real_data$muvec
+parameters$probvec_V <- real_data$probvec_V
+parameters$probvec_Z <- real_data$probvec_Z
+parameters$probvec_Q <- real_data$probvec_Q
+parameters$probvec_F <- real_data$probvec_F
+parameters$P0 <- real_data$P0
+parameters$minimum_n <- real_data$minimum_n
 
+# Prepare settings
 settings <- list()
-settings$num_logs <- num_logs
-settings$length_UI <- 5
-settings$n_particle <- 10000
+settings$num_logs <- real_data$num_logs
+settings$length_UI <- 2
+settings$n_particle <- 1500
 settings$Jss1 <- 1/3
 settings$Js1s <- 1/3
 settings$Smax <- 50
-settings$n_ite <- 60000
-settings$burn_in <- 10000
+settings$n_ite <- 20000
+settings$burn_in <- 5000
 settings$thinning <- 5
 settings$method <- "turcotte"
-settings$recycled_particles = 4
+settings$recycled_particles <- 4
 
-#sink("/Users/emanueleuio/Desktop/RJMCMC-output.txt")
-
+# Run SMC end-to-end
+cat("Starting SMC computation...\n")
+cat("Data points:", length(ts_data$Yvec), "\n")
+cat("Number of particles:", settings$n_particle, "\n")
+cat("Update interval length:", settings$length_UI, "\n")
+cat("Number of iterations:", settings$n_ite, "\n")
+cat("\n")
 
 out_SMC <- RJSMC::SMC(ts_data = ts_data,
                       parameters = parameters,
                       settings = settings)
 
-
-plot(out_SMC, truth = NULL)
+# Plot results
+#plot(out_SMC, truth = NULL)
 

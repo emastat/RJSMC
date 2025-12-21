@@ -750,10 +750,15 @@ reduce_Bvec <- function(Bvec, BR, S) {
 #' @param eta0vec (const NumericVector&) Mean parameters ruling the length of empty segments in different levels of F state
 #' @param probvec_Z (const NumericVector&) probability mass for the Z state
 #' @param probvec_F (const NumericVector&) probability mass for the F state
+#' @param probvec_Q (const NumericVector&) probability mass for the Q state
+#' @param alphavec (const NumericVector&) Shape parameters ruling the rate of occurrence of segment for the different levels of the Q state
+#' @param muvec (const NumericVector&) Mean parameters ruling the rate of occurrence of segment for the different levels of the Q state
+#' @param minimum_n (const int&) minimum number of observations that must be observed in a non-empty segment
+#' @param W (const int&) Number of levels for the Q state
 #' @param P0 (const double&) Probability to observe an empty segment after a non-empty one
 #' @return correction weight (double)
 #' @export
-weigths_correction <- function(T_seg, break_sample_output, M, K, keyvec, etavec, key0vec, eta0vec, probvec_Z, probvec_F, P0) {
-    .Call(`_RJSMC_weigths_correction`, T_seg, break_sample_output, M, K, keyvec, etavec, key0vec, eta0vec, probvec_Z, probvec_F, P0)
+weigths_correction <- function(T_seg, break_sample_output, M, K, keyvec, etavec, key0vec, eta0vec, probvec_Z, probvec_F, probvec_Q, alphavec, muvec, W, P0) {
+    .Call(`_RJSMC_weigths_correction`, T_seg, break_sample_output, M, K, keyvec, etavec, key0vec, eta0vec, probvec_Z, probvec_F, probvec_Q, alphavec, muvec, W, P0)
 }
 

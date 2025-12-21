@@ -636,8 +636,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // weigths_correction
-double weigths_correction(const NumericVector& T_seg, const List& break_sample_output, const int& M, const int& K, const NumericVector& keyvec, const NumericVector& etavec, const NumericVector& key0vec, const NumericVector& eta0vec, const NumericVector& probvec_Z, const NumericVector& probvec_F, const double& P0);
-RcppExport SEXP _RJSMC_weigths_correction(SEXP T_segSEXP, SEXP break_sample_outputSEXP, SEXP MSEXP, SEXP KSEXP, SEXP keyvecSEXP, SEXP etavecSEXP, SEXP key0vecSEXP, SEXP eta0vecSEXP, SEXP probvec_ZSEXP, SEXP probvec_FSEXP, SEXP P0SEXP) {
+double weigths_correction(const NumericVector& T_seg, const List& break_sample_output, const int& M, const int& K, const NumericVector& keyvec, const NumericVector& etavec, const NumericVector& key0vec, const NumericVector& eta0vec, const NumericVector& probvec_Z, const NumericVector& probvec_F, const NumericVector& probvec_Q, const NumericVector& alphavec, const NumericVector& muvec, const int& W, const double& P0);
+RcppExport SEXP _RJSMC_weigths_correction(SEXP T_segSEXP, SEXP break_sample_outputSEXP, SEXP MSEXP, SEXP KSEXP, SEXP keyvecSEXP, SEXP etavecSEXP, SEXP key0vecSEXP, SEXP eta0vecSEXP, SEXP probvec_ZSEXP, SEXP probvec_FSEXP, SEXP probvec_QSEXP, SEXP alphavecSEXP, SEXP muvecSEXP, SEXP WSEXP, SEXP P0SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -651,8 +651,12 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const NumericVector& >::type eta0vec(eta0vecSEXP);
     Rcpp::traits::input_parameter< const NumericVector& >::type probvec_Z(probvec_ZSEXP);
     Rcpp::traits::input_parameter< const NumericVector& >::type probvec_F(probvec_FSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type probvec_Q(probvec_QSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type alphavec(alphavecSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type muvec(muvecSEXP);
+    Rcpp::traits::input_parameter< const int& >::type W(WSEXP);
     Rcpp::traits::input_parameter< const double& >::type P0(P0SEXP);
-    rcpp_result_gen = Rcpp::wrap(weigths_correction(T_seg, break_sample_output, M, K, keyvec, etavec, key0vec, eta0vec, probvec_Z, probvec_F, P0));
+    rcpp_result_gen = Rcpp::wrap(weigths_correction(T_seg, break_sample_output, M, K, keyvec, etavec, key0vec, eta0vec, probvec_Z, probvec_F, probvec_Q, alphavec, muvec, W, P0));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -685,7 +689,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_RJSMC_reduce_vecM", (DL_FUNC) &_RJSMC_reduce_vecM, 4},
     {"_RJSMC_augment_Bvec", (DL_FUNC) &_RJSMC_augment_Bvec, 4},
     {"_RJSMC_reduce_Bvec", (DL_FUNC) &_RJSMC_reduce_Bvec, 3},
-    {"_RJSMC_weigths_correction", (DL_FUNC) &_RJSMC_weigths_correction, 11},
+    {"_RJSMC_weigths_correction", (DL_FUNC) &_RJSMC_weigths_correction, 15},
     {NULL, NULL, 0}
 };
 

@@ -149,14 +149,17 @@ result <- breakpoints_sampling(
 )
 
 
+
+### TEST ENGLISH WORDS DATA WRONG APPROXIMATION ####
+
 english_words <- load_english_words_data()
   
   
 n_particle <- 200
 
 result <- SMC_turcotte_cpp(
-  english_words$Yvec,
-  english_words$Tvec,
+  english_words$Yvec[(english_words$Tvec>33) & (english_words$Tvec<40)],
+  english_words$Tvec[(english_words$Tvec>33) & (english_words$Tvec<40)],
   length_UI = 1.5,
   n_particle = n_particle,
   U = english_words$U,
@@ -183,6 +186,10 @@ result <- SMC_turcotte_cpp(
   burn_in = 5000,
   thinning = 5
 )
+
+english_words$Bvec[(english_words$Bvec>33) & (english_words$Bvec<40)]
+
+###  END TEST ENGLISH WORDS DATA WRONG APPROXIMATION ####
 
 
 n_particle <- 300

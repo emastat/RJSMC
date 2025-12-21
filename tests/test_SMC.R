@@ -3,9 +3,11 @@
 #load the "english_words" data
 #data("english_words")
 rm(list=ls())
-#set.seed(32453)    ##Works
-set.seed(45635)     ##Gets an error
-library(RJSMC)
+set.seed(32453)    ##Works
+#set.seed(45635)     ##Gets an error
+
+devtools::load_all()
+
 library(mclust)
 library(fitdistrplus)
 
@@ -15,6 +17,7 @@ Zvec <- english_words$Zvec
 Qvec <- english_words$Qvec
 Fvec <- english_words$Fvec
 
+#obs_to_take = english_words$Tvec>33 & english_words$Tvec<37
 Tvec <- english_words$Tvec
 Yvec <- english_words$Yvec
 
@@ -42,13 +45,13 @@ parameters$minimum_n <- english_words$minimum_n
 
 settings <- list()
 settings$num_logs <- english_words$num_logs
-settings$length_UI <- 0.5
+settings$length_UI <- 1
 settings$n_particle <- 5000
 settings$Jss1 <- 1/3
 settings$Js1s <- 1/3
 settings$Smax <- 150
-settings$n_ite <- 40000
-settings$burn_in <- 6000
+settings$n_ite <- 50000
+settings$burn_in <- 20000
 settings$thinning <- 5
 settings$method <- "turcotte"
 
@@ -58,41 +61,16 @@ out_SMC <- RJSMC::SMC(ts_data = ts_data,
                     parameters = parameters,
                     settings = settings)
 
+## plot with observations
+plot(out_SMC, 
+     truth=list(B=english_words$Bvec, cl=english_words$Vvec),
+     observations=list(Tvec=Tvec),time_to_date=FALSE)
 
-plot(out_SMC,truth=list(B=english_words$Bvec,cl=english_words$Vvec))
+plot(out_SMC, 
+     truth=list(B=english_words$Bvec, cl=english_words$Vvec),
+     observations=list(Tvec=english_words$Tvec[3000:3100]))
 
-par1 = english_words$alphavec[1]
-par2 = (english_words$alphavec[1]/english_words$muvec)/(english_words$alphavec[1]/english_words$muvec+ 15.1652-14.495)
 
-dnbinom(-1,par1,par2,log = TRUE )
-# # bugfix get_results
-#
-# UI_bounds= readRDS(file ="/Users/emanueleuio/Desktop/inspect_results/UI_bounds.rds")
-# n_particle = readRDS(file ="/Users/emanueleuio/Desktop/inspect_results/n_particle.rds")
-# storage_B = readRDS(file ="/Users/emanueleuio/Desktop/inspect_results/out_SMC_cpp$storage_B.rds")
-# storage_V = readRDS(file ="/Users/emanueleuio/Desktop/inspect_results/out_SMC_cpp$storage_V.rds")
-# storage_Z = readRDS(file ="/Users/emanueleuio/Desktop/inspect_results/out_SMC_cpp$storage_Z.rds")
-# storage_Q = readRDS(file ="/Users/emanueleuio/Desktop/inspect_results/out_SMC_cpp$storage_Q.rds")
-# storage_F = readRDS(file ="/Users/emanueleuio/Desktop/inspect_results/out_SMC_cpp$storage_F.rds")
-# U = readRDS(file ="/Users/emanueleuio/Desktop/inspect_results/U.rds")
-# W = readRDS(file ="/Users/emanueleuio/Desktop/inspect_results/W.rds")
-# K = readRDS(file ="/Users/emanueleuio/Desktop/inspect_results/K.rds")
-#
-# j = 1
-# results_UI <- get_results(UI_bounds[j],
-#                           UI_bounds[j+1],
-#                           n_particle,
-#                           0.01,
-#                           storage_B[[j]],
-#                           storage_V[[j]],
-#                           storage_Z[[j]],
-#                           storage_Q[[j]],
-#                           storage_F[[j]],
-#                           U,
-#                           W,
-#                           K,
-#                           2)
-#
-#
-#
-#
+
+## DEUBUG
+english_words$Bvec[(english_words$Bvec>33) & (english_words$Bvec<37)]

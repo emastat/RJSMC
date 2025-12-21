@@ -14,6 +14,10 @@ double weigths_correction(const NumericVector& T_seg,
                           const NumericVector& eta0vec,
                           const NumericVector& probvec_Z,
                           const NumericVector& probvec_F,
+                          const NumericVector& probvec_Q,
+                          const NumericVector& alphavec,
+                          const NumericVector& muvec,
+                          const int& W,
                           const double& P0);
 
 #endif

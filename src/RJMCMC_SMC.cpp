@@ -562,6 +562,27 @@ void     RJMCMC_SMC(const NumericVector& T_seg,
                        Bvec_final[0], start_point, index);
           }
 
+          // ENHANCED BUG DETECTION CHECK: Verify open segment (last segment) has V=0 if zero observations
+          // The last segment (index S-1) is the open segment
+          if(S >= 1){
+            int last_seg_idx = S - 1;
+            double LB_open = Bvec_final[last_seg_idx];
+            int V_open = Vvec_final[last_seg_idx];
+            
+            // Directly count observations in the open segment [LB_open, end_point)
+            int obs_count_open = 0;
+            for(int k = 0; k < T_seg.size(); k++){
+              if(T_seg[k] >= LB_open && T_seg[k] < end_point){
+                obs_count_open++;
+              }
+            }
+            
+            // If open segment has zero observations, V must be 0
+            if(obs_count_open == 0 && V_open != 0){
+              Rcpp::stop("BUG DETECTED in RJMCMC_SMC: Open segment (last segment) with zero observations has non-zero V state. Particle=%d, Segment index=%d, V=%d, obs_count=%d, LB=%.6f, end_point=%.6f, Bvec_final[S]=%.6f, T_seg_size=%d", 
+                         index, last_seg_idx, V_open, obs_count_open, LB_open, end_point, Bvec_final[S], T_seg.size());
+            }
+          }
 
           //this copy is by value
           container_B[index] = clone(Bvec_final) ;
@@ -699,6 +720,10 @@ void     RJMCMC_SMC(const NumericVector& T_seg,
                        eta0vec,
                        probvec_Z,
                        probvec_F,
+                       probvec_Q,
+                       alphavec,
+                       muvec,
+                       W,
                        P0) ;
 
     // correct weights for the particles updated in this routine
@@ -709,7 +734,7 @@ void     RJMCMC_SMC(const NumericVector& T_seg,
 
       index_value = particle_index_vec[i] ;
 
-      weight_vec[index_value] = weight_vec[index_value] * std::exp(weigths_corr_value);
+      weight_vec[index_value] = weight_vec[index_value] * weigths_corr_value;
 
       if(NumericVector::is_na(weight_vec[index_value])){
 

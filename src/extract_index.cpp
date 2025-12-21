@@ -29,9 +29,12 @@ NumericVector extract_index(const NumericVector& x,
     i = i + 1;
   }
 
-  // Cap i to prevent out-of-bounds access
+  // If all elements are <= lower, no valid start index exists
   if(i >= x_length){
-    i = x_length - 1;
+    out[0] = 0;  // count = 0
+    out[1] = -1; // no valid start index
+    out[2] = -1; // no valid end index
+    return out;
   }
 
   int j = i;

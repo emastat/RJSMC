@@ -9,7 +9,8 @@
   origin = as.Date("2022-01-01"),
   pl = "V",
   truth = list(B = Bvec, cl = Vvec),
-  clnames = NULL
+  clnames = NULL,
+  observations = NULL
 )
 }
 \arguments{
@@ -22,7 +23,9 @@
 \item{truth}{A list containing 'V', a vector with true states within each segment and 'B', a vector containing the starting points for each segment}
 
 \item{clnames}{A vector giving names on the different classes. If NULL (default), classes are named 0,1,...}
+
+\item{observations}{A list containing 'Tvec' (time stamps of observations) and optionally 'Yvec' (message labels for coloring). If NULL (default), no observation dots are displayed.}
 }
 \description{
-Plots an area plot over time with the areas corresponding to probabilities for the different discrete events. If 'truth' is available, also a piecewise horizontal line with levels equal to the state number is displayed within the same plot (with levels described on the right horizontal axis)
+Plots an area plot over time with the areas corresponding to probabilities for the different discrete events. If 'truth' is available, also a piecewise horizontal line with levels equal to the state number is displayed within the same plot (with levels described on the right horizontal axis). If 'observations' is provided, dots for each observation are displayed above the truth rectangles.
 }
