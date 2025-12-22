@@ -199,9 +199,19 @@ SMC = function( ts_data,
           )
     )
 
+  non_empty_UI_bounds = list()
+  SP = UI_bounds[1]
   for(i in non_empty_UI){
+    EP = UI_bounds[i+1]
+    non_empty_UI_bounds = c(non_empty_UI_bounds,list(c(SP,EP)))
+    SP = EP
+  }
 
-    sum_na = sum(is.na(unlist(out_SMC_cpp$storage_weight[[i]])))
+  for(i in 1:length(non_empty_UI)){
+
+    non_empty_idx = non_empty_UI[[i]]
+
+    sum_na = sum(is.na(unlist(out_SMC_cpp$storage_weight[[non_empty_idx]])))
 
     if(sum_na>0){stop("SMC.R-->there are NA, checkout")}
 
@@ -220,15 +230,15 @@ SMC = function( ts_data,
       saveRDS(K, file =paste0(settings$dir,"K.rds"))
     }
 
-    results_UI <- get_results(UI_bounds[i],
-                              UI_bounds[i+1],
+    results_UI <- get_results(non_empty_UI_bounds[[i]][1],
+                              non_empty_UI_bounds[[i]][2],
                               n_particle,
                               0.01,
-                              out_SMC_cpp$storage_B[[i]],
-                              out_SMC_cpp$storage_V[[i]],
-                              out_SMC_cpp$storage_Z[[i]],
-                              out_SMC_cpp$storage_Q[[i]],
-                              out_SMC_cpp$storage_F[[i]],
+                              out_SMC_cpp$storage_B[[non_empty_idx]],
+                              out_SMC_cpp$storage_V[[non_empty_idx]],
+                              out_SMC_cpp$storage_Z[[non_empty_idx]],
+                              out_SMC_cpp$storage_Q[[non_empty_idx]],
+                              out_SMC_cpp$storage_F[[non_empty_idx]],
                               U,
                               W,
                               K,
@@ -242,25 +252,25 @@ SMC = function( ts_data,
                                           n_particle,
                                           results_UI$state_container_V,
                                           U+1,
-                                          unlist(out_SMC_cpp$storage_weight[[i]]))
+                                          unlist(out_SMC_cpp$storage_weight[[non_empty_idx]]))
 
     temp_container_Z <- compute_posterior(results_UI$num_discr_intervals,
                                           n_particle,
                                           results_UI$state_container_Z,
                                           K+1,
-                                          unlist(out_SMC_cpp$storage_weight[[i]]))
+                                          unlist(out_SMC_cpp$storage_weight[[non_empty_idx]]))
 
     temp_container_Q <- compute_posterior(results_UI$num_discr_intervals,
                                             n_particle,
                                             results_UI$state_container_Q,
                                             W+1,
-                                            unlist(out_SMC_cpp$storage_weight[[i]]))
+                                            unlist(out_SMC_cpp$storage_weight[[non_empty_idx]]))
 
     temp_container_F <- compute_posterior(results_UI$num_discr_intervals,
                                             n_particle,
                                             results_UI$state_container_F,
                                             2+1,
-                                            unlist(out_SMC_cpp$storage_weight[[i]]))
+                                            unlist(out_SMC_cpp$storage_weight[[non_empty_idx]]))
 
 
 
@@ -277,7 +287,7 @@ SMC = function( ts_data,
 
     points_container <- c(points_container, results_UI$discr_points)
 
-    UI_index_vector <- c(UI_index_vector, rep(i, length(results_UI$discr_points)))
+    UI_index_vector <- c(UI_index_vector, rep(non_empty_idx, length(results_UI$discr_points)))
 
   }
 

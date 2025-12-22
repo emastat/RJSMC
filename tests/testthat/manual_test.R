@@ -158,9 +158,9 @@ english_words <- load_english_words_data()
 n_particle <- 200
 
 result <- SMC_turcotte_cpp(
-  english_words$Yvec[(english_words$Tvec>33) & (english_words$Tvec<40)],
-  english_words$Tvec[(english_words$Tvec>33) & (english_words$Tvec<40)],
-  length_UI = 1.5,
+  english_words$Yvec[(english_words$Tvec>0) & (english_words$Tvec<5)],
+  english_words$Tvec[(english_words$Tvec>0) & (english_words$Tvec<5)],
+  length_UI = 1,
   n_particle = n_particle,
   U = english_words$U,
   W = english_words$W,
@@ -187,7 +187,55 @@ result <- SMC_turcotte_cpp(
   thinning = 5
 )
 
-english_words$Bvec[(english_words$Bvec>33) & (english_words$Bvec<40)]
+n_UI <- result$n_UI
+
+#vector  with bounds between the Update Intervals
+UI_bounds <- result$UI_bounds
+
+
+posteriors_container_V <- NULL
+posteriors_container_Z <- NULL
+posteriors_container_Q <- NULL
+posteriors_container_F <- NULL
+points_container <- NULL
+UI_index_vector <- NULL
+
+non_empty_UI <- setdiff(
+    1:(length(UI_bounds)-1),
+    which(sapply(result$storage_B, is.null
+                  )
+          )
+    )
+
+
+results_UI <- get_results(UI_bounds[i],
+                              UI_bounds[i+1],
+                              n_particle,
+                              0.01,
+                              result$storage_B[[i]],
+                              result$storage_V[[i]],
+                              result$storage_Z[[i]],
+                              result$storage_Q[[i]],
+                              result$storage_F[[i]],
+                              english_words$U,
+                              english_words$W,
+                              english_words$K,
+                              2)
+
+
+ex=list()
+SP = UI_bounds[1]
+
+for(i in non_empty_UI){
+  
+  EP = UI_bounds[i+1]
+  ex = c(ex,list(c(SP,EP)))
+
+  SP = EP
+}
+
+
+
 
 ###  END TEST ENGLISH WORDS DATA WRONG APPROXIMATION ####
 

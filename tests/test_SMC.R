@@ -17,7 +17,7 @@ Zvec <- english_words$Zvec
 Qvec <- english_words$Qvec
 Fvec <- english_words$Fvec
 
-#obs_to_take = english_words$Tvec>33 & english_words$Tvec<37
+obs_to_take = english_words$Tvec>0 & english_words$Tvec<5
 Tvec <- english_words$Tvec
 Yvec <- english_words$Yvec
 
