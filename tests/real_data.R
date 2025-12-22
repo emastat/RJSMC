@@ -1,93 +1,55 @@
-# load abb data and add the to the RJSMC package
+#library(RJSMC)
+library(mclust)
+library(fitdistrplus)
 
-abb_data <- readRDS("/Users/emanueleuio/Desktop/di21_final.RDS")
-Tvec <- abb_data$time
-Yvec <- as.numeric(abb_data$label)
+# Load real_data from package
+data("real_data", package = "RJSMC")
 
+set.seed(22)
 
+# Prepare time series data
 ts_data <- list()
-ts_data$Yvec <- Yvec[1:3000]
-ts_data$Tvec <- Tvec[1:3000]
-lambdamat <- readRDS("/Users/emanueleuio/Desktop/parameter_values/lambdamat_par.RDS")
-keyvec <- readRDS("/Users/emanueleuio/Desktop/parameter_values/greenvec_par.RDS")
-etavec <-  readRDS("/Users/emanueleuio/Desktop/parameter_values/etavec_par.RDS")
-key0vec <- readRDS("/Users/emanueleuio/Desktop/parameter_values/greenvec_empty_par.RDS")
-eta0vec <-  readRDS("/Users/emanueleuio/Desktop/parameter_values/etavec_empty_par.RDS")
-alphavec <- readRDS("/Users/emanueleuio/Desktop/parameter_values/alphavec_par.RDS")
-muvec <- readRDS("/Users/emanueleuio/Desktop/parameter_values/muvec_par.RDS")
-probvec_Z <- readRDS("/Users/emanueleuio/Desktop/parameter_values/qvec_par.RDS")
-probvec_V <- readRDS("/Users/emanueleuio/Desktop/parameter_values/deltavec_par.RDS")
-probvec_F <- readRDS("/Users/emanueleuio/Desktop/parameter_values/epsivec_par.RDS")
-probvec_Q <- c(0.5,0.5)
-num_logs <- ncol(lambdamat)
-P0 <- readRDS("/Users/emanueleuio/Desktop/parameter_values/P0_par.RDS")
-minimum_n <- 0
-probvec_Z <- readRDS("/Users/emanueleuio/Desktop/parameter_values/qvec_par.RDS")
-probvec_V <- readRDS("/Users/emanueleuio/Desktop/parameter_values/deltavec_par.RDS")
-probvec_F <- readRDS("/Users/emanueleuio/Desktop/parameter_values/epsivec_par.RDS")
-probvec_Q <- c(0.5,0.5)
+ts_data$Yvec <- real_data$Yvec[1000:1200]
+ts_data$Tvec <- real_data$Tvec[1000:1200]
 
-K <- length(alphavec)
-U <- length(probvec_V)
-W <- 2
-
-
+# Prepare parameters from real_data
 parameters <- list()
-parameters$U <- U
-parameters$W <- W
-parameters$K <- K
-parameters$lambdamat <- lambdamat
-parameters$keyvec <- keyvec
-parameters$etavec <- etavec
-parameters$key0vec <- key0vec
-parameters$eta0vec <- eta0vec
-parameters$alphavec <- alphavec
-parameters$muvec <- muvec
-parameters$probvec_V <- probvec_V
-parameters$probvec_Z <- probvec_Z
-parameters$probvec_Q <- probvec_Q
-parameters$probvec_F <- probvec_F
-parameters$P0 <- P0
-parameters$minimum_n <- 0
+parameters$U <- real_data$U
+parameters$W <- real_data$W
+parameters$K <- real_data$K
+parameters$lambdamat <- real_data$lambdamat
+parameters$keyvec <- real_data$keyvec
+parameters$etavec <- real_data$etavec
+parameters$key0vec <- real_data$key0vec
+parameters$eta0vec <- real_data$eta0vec
+parameters$alphavec <- real_data$alphavec
+parameters$muvec <- real_data$muvec
+parameters$probvec_V <- real_data$probvec_V
+parameters$probvec_Z <- real_data$probvec_Z
+parameters$probvec_Q <- real_data$probvec_Q
+parameters$probvec_F <- real_data$probvec_F
+parameters$P0 <- real_data$P0
+parameters$minimum_n <- real_data$minimum_n
 
+# Prepare settings
 settings <- list()
-settings$num_logs <- num_logs
-settings$length_UI <- 4
-settings$n_particle <- 100
+settings$num_logs <- real_data$num_logs
+settings$length_UI <- 2
+settings$n_particle <- 1500
 settings$Jss1 <- 1/3
 settings$Js1s <- 1/3
 settings$Smax <- 50
-settings$n_ite <- 6000
-settings$burn_in <- 2000
-settings$thinning <- 10
-settings$method <- "waste_free"
-settings$recycled_particles = 4
-
-#sink("/Users/emanueleuio/Desktop/RJMCMC-output.txt")
-
+settings$n_ite <- 20000
+settings$burn_in <- 5000
+settings$thinning <- 5
+settings$method <- "turcotte"
 
 out_SMC <- RJSMC::SMC(ts_data = ts_data,
                       parameters = parameters,
                       settings = settings)
 
-
-# get number of Updating windows (i.e. intervals)
-out_SMC@n_UI
-
-# get marginal posterior for "V" at each discretization point
-
-class(out_SMC@posteriors_container_V)
-length(out_SMC@points_container)
-table(out_SMC@UI_index_vector)
+# Plot results
+plot(out_SMC, observations=list(Tvec=ts_data$Tvec),time_to_date=TRUE)
 
 
-output =plot(out_SMC,
-    truth = NULL)
-output
-
-
-
-
-
-
-
+plot(out_SMC, observations=list(Tvec=ts_data$Tvec),time_to_date=TRUE)

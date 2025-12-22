@@ -39,7 +39,7 @@ using namespace Rcpp;
 //' @param minimum_n (const int&) minimum number of observations in a non-empty segment
 //' @param start_point (double, default is 0.0) start of the update interval
 //' @param end_point (double, default is 0.0) end of the update interval; to be used for partially observed segments
-
+//' @name shift_function
 // [[Rcpp::export]]
 
 void  shift_function(      int& S,
@@ -72,101 +72,102 @@ void  shift_function(      int& S,
                      const double& start_point=0.0,
                      const double& end_point=0.0){
 
-   //Rcout << "start shift " << "\n" ;
+    //Rcout << "start shift " << "\n" ;
 
-   NumericVector Bvec_clone = clone(Bvec) ;
-
-
-   int BR ; // index (from 1 to S-1) of the breakpoint to shifted
-
-   double T_p=0, // the proposed changepoint
-          u1=0, // value of a Unif(0,1) used to sampled a new changepoint
-          LB=0,  // lower bound of the selected "double" segment
-          UB=0,  // upper bound of the selected "double" segment
-          Td=0,  // the breakpoint that will be possibly shifted
-          L_1p=0, //length of the new "left" segment
-          L_2p=0; //length of the new "right" segment
-
-   int V_1 = 0, // V state of the current "left" segment
-       V_2 = 0, // V state of the current "right" segment
-       Z_1 = 0, // Z state of the current "left" segment
-       Z_2 = 0, // Z state of the current "right" segment
-       Q_1 = 0, // Q state of the current "left" segment
-       Q_2 = 0, // Q state of the current "right" segment
-       F_1 = 0, // F state of the current "left" segment
-       F_2 = 0, // F state of the current "right" segment
-       V_left = 0, //V  state of the segment before the current one
-       V_right = 0 ; //V state of the segment after the current one
-
-   double count_1p = 0.0 ; // number of obs in proposed seg 1
-   double count_2p = 0.0 ; // number of obs in proposed seg 2
-
-   int counter = 0 ;
-
-   bool open_segment = false ; // to check if the last segment has been proposed to be changed
-
-   bool illegal_configuration = true ; // to check that the split provides a legal confguration of the new segments (given te assumed constrains)
+    NumericVector Bvec_clone = clone(Bvec) ;
 
 
-   while( illegal_configuration==true & counter<50){
+    int BR ; // index (from 1 to S-1) of the breakpoint to shifted
+
+    double T_p=0, // the proposed changepoint
+           u1=0, // value of a Unif(0,1) used to sampled a new changepoint
+           LB=0,  // lower bound of the selected "double" segment
+           UB=0,  // upper bound of the selected "double" segment
+           Td=0,  // the breakpoint that will be possibly shifted
+           L_1p=0, //length of the new "left" segment
+           L_2p=0; //length of the new "right" segment
+
+    int V_1 = 0, // V state of the current "left" segment
+        V_2 = 0, // V state of the current "right" segment
+        Z_1 = 0, // Z state of the current "left" segment
+        Z_2 = 0, // Z state of the current "right" segment
+        Q_1 = 0, // Q state of the current "left" segment
+        Q_2 = 0, // Q state of the current "right" segment
+        F_1 = 0, // F state of the current "left" segment
+        F_2 = 0, // F state of the current "right" segment
+        V_left = 0, //V  state of the segment before the current one
+        V_right = 0 ; //V state of the segment after the current one
+
+    double count_1p = 0.0 ; // number of obs in proposed seg 1
+    double count_2p = 0.0 ; // number of obs in proposed seg 2
+
+    int counter = 0 ;
+
+    bool open_segment = false ; // to check if the last segment has been proposed to be changed
+
+    bool illegal_configuration = true ; // to check that the split provides a legal confguration of the new segments (given te assumed constrains)
+
+
+    while( (illegal_configuration==true) & (counter<50)){
 
       L_1p=0,
       L_2p=0;
 
-      while(L_1p< (1.0/720.0) | L_2p< (1.0/720.0)){
+      while((L_1p< (1.0/720.0)) | (L_2p< (1.0/720.0))){
 
-      BR =as<int>( Rcpp::sample(S-1, 1)) ;
+        BR =as<int>( Rcpp::sample(S-1, 1)) ;
 
-      Td = Bvec[BR] ;
+        Td = Bvec[BR] ;
 
-      LB = Bvec[BR-1]  ;
+        LB = Bvec[BR-1]  ;
 
-      UB = Bvec[BR+1]  ;
+        UB = Bvec[BR+1]  ;
 
-      u1 =  R::runif(0.0,1.0) ;
+        u1 =  R::runif(0.0,1.0) ;
 
-      if(BR>1 & BR < (S-1)){ // the new changepoint can be placed anywhere within the selected segment
+        if((BR>1) & (BR < (S-1))){ // the new changepoint can be placed anywhere within the selected segment
+           // BUT: if BR > 0, T_p must be >= start_point (only Bvec[0] can be < start_point)
+           double effective_LB = std::max(LB, start_point);
+           T_p =  effective_LB + u1*(UB-effective_LB)  ;
 
-         T_p =  LB + u1*(UB-LB)  ;
 
-      }else if(BR>1 & BR==(S-1)){ // the new changepoint must be placed within the penultimate changepoint (LB) and the end of the Update interval (end_point)
+        }else if((BR>1) & (BR==(S-1))){ // the new changepoint must be placed within the penultimate changepoint (LB) and the end of the Update interval (end_point)
+           // BUT: if BR > 0, T_p must be >= start_point
 
-         T_p = LB + u1*(end_point-LB)  ;
+           double effective_LB = std::max(LB, start_point);
+           T_p = effective_LB + u1*(end_point-effective_LB)  ;
 
-      }else if(BR==1 & BR<(S-1)){ // the new changepoint must be placed within the start point of the update interval start_point) and the 3rd changepoint (UB)
+        }else if((BR==1) & (BR<(S-1))){ // the new changepoint must be placed within the start point of the update interval start_point) and the 3rd changepoint (UB)
+           // T_p must be >= start_point (BR==1 means we're shifting breakpoint at position 1, not 0)
+           T_p = start_point + u1 * (UB - start_point) ;
 
-         T_p = start_point + u1 * (UB - start_point) ;
+        }else if((BR==1) & (BR==(S-1))){ //the new changepoint must be placed between start_point and end_point
+           // T_p must be >= start_point (BR==1 means we're shifting breakpoint at position 1, not 0)
+           T_p = start_point + u1 * (end_point - start_point) ;
+        }
 
-      }else if(BR==1 & BR==(S-1)){ //the new changepoint must be place between start_point and end_point
+        L_1p = T_p - LB ;
 
-         T_p = start_point + u1 * (end_point - start_point) ;
+        L_2p = UB - T_p ;
+
+        counter += 1 ;
+
+        if(counter>50){ break ;}
       }
-
-
-      L_1p = T_p - LB ;
-
-      L_2p = UB - T_p ;
-
-      counter += 1 ;
-
-      //if(counter>50){stop("reached 150 counter in S");}
-
-      if(counter>50){ break ;}
-   }
 
       // if the last segment has been sample then it must be an open segment
 
       if(BR == (S-1)){
+        open_segment = true ;
 
-         open_segment = true ;
+        if(T_p>end_point){
 
-         if(T_p>end_point){
-
-            Rcout << "LB  " << LB << "\n" ;
-            Rcout << "T_p  " << T_p << "\n" ;
-            Rcout << "UB  " << UB << "\n" ;
-            Rcout << "end_point  " << end_point << "\n" ;
-            stop("the last segment must end after the end_point") ;}
+          Rcout << "LB  " << LB << "\n" ;
+          Rcout << "T_p  " << T_p << "\n" ;
+          Rcout << "UB  " << UB << "\n" ;
+          Rcout << "end_point  " << end_point << "\n" ;
+          stop("the last segment must end after the end_point") ;
+        }
 
       }else{ open_segment = false ;}
 
@@ -232,21 +233,18 @@ void  shift_function(      int& S,
          ( (count_2p>0) & ( count_2p<minimum_n) )  ){
 
 
-         //the new proposed changepoint produces to empty segments in a row
+         //the new proposed changepoint produces two empty segments in a row
          //Illegal configuration stays "true": propose a new changepoint
-
 
       }else{
 
-         // a legal configuration has been proposed, we can move on and performing the shift move
+        // a legal configuration has been proposed, we can move on and performing the shift move
 
-         illegal_configuration =false ;
-
+        illegal_configuration =false ;
 
       }
 
-
-   }
+    }
 
 
    if(counter>49){
@@ -259,8 +257,8 @@ void  shift_function(      int& S,
    // 2. evaluate the proposal distribution at the new sampled values
    // 3. evaluate the posterior of the new "left" segment
 
-   if((count_1p >0 & count_1p < minimum_n) |
-      ((count_2p >0 & count_2p < minimum_n) & (open_segment == false)))
+   if(( (count_1p > 0) & (count_1p < minimum_n) ) |
+      (( (count_2p > 0) & (count_2p < minimum_n)) & (open_segment == false)))
    {
 
       Rcout << "count_1p: " << count_1p << "\n" ;
@@ -442,9 +440,9 @@ void  shift_function(      int& S,
 
      double logr_rightV = 0 ;
 
-     if(V_2!= 0 & V_2p==0  ){logr_rightV = - std::log(1-P0) ; }
+     if((V_2!= 0) & (V_2p==0)  ){logr_rightV = - std::log(1-P0) ; }
 
-     else if( V_2 ==0 & V_2p !=0){logr_rightV = + std::log(1-P0) ; }
+     else if( (V_2 ==0) & (V_2p !=0)){logr_rightV = + std::log(1-P0) ; }
 
    //final log ratio
 
@@ -495,16 +493,9 @@ void  shift_function(      int& S,
        int illegal_Break = sum(Bvec_actual < start_point) ;
 
        if(illegal_Break > 1 ){
-
-          Rcout << "start_point:  " << start_point << "\n" ;
-          Rcout << "end_point:  " << end_point << "\n" ;
-          Rcout << "original_bvec:  " << Bvec_clone << "\n" ;
-          Rcout << "shift_function: this is Bvec:  " << Bvec_actual << "\n"  ;
           stop("shit_function: more than 1 Breakpoint vector is smaller than LB");
-
        }
-
-
+      
     }
 
    }

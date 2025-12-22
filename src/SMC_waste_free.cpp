@@ -137,7 +137,7 @@ List SMC_waste_free_cpp( const IntegerVector& Yvec,
 
     end_point = UI_bounds[j+1] ;
 
-    if(sum(Tvec>start_point & Tvec<end_point)==0){
+    if(sum((Tvec>start_point) & (Tvec<end_point))==0){
 
       //Do nothing - no observations inside the current Update Interval
 
@@ -265,7 +265,8 @@ List SMC_waste_free_cpp( const IntegerVector& Yvec,
                      container_Q,
                      container_F,
                      Svec,
-                     weight_vec);
+                     weight_vec,
+                     false);
         }
       }
 
@@ -323,7 +324,8 @@ List SMC_waste_free_cpp( const IntegerVector& Yvec,
                    container_Q,
                    container_F,
                    Svec,
-                   weight_vec);
+                   weight_vec,
+                   true);
       }
 
       // normalize the weight vector

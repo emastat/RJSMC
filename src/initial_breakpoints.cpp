@@ -5,23 +5,28 @@ using namespace Rcpp;
 
 //' @title initial_breakpoints
 //' Function to initialize the changepoint vector during the first iteration of the RJMCMC
-//' @param T_seg Vector with time stamps within the update interval
+//' @param T_seg_orig Vector with time stamps within the update interval
 //' @param t_star Estimate of the latest changepoint simulated when performing the RJMCMC during the previous iteration of the SMC (precedent update interval)
 //' @param start_point Left bound of the current update interval
 //' @param end_point Right bound of the current update interval
 //' @param minimum_n minimum number of observation allowed in a non-empty segment
 //' @param max_range (const double&) time interval in which the last changepoint is allowed to be place after the end point (end_point;end_point+1)
 //' @param min_seg_length (const double) minimum length allowed for a segment to be valid
-//' @return NumericVector with the generated changepoints. Starting at t_star, ending at B_k>UB
+//' @return NumericVector with the generated changepoints. Starting with t_star, ending with B_k > UB
 //' @export
 // [[Rcpp::export]]
-NumericVector initial_breakpoints(  const NumericVector& T_seg,
+NumericVector initial_breakpoints(  const NumericVector& T_seg_orig,
                                     const double& t_star,
                                     const double& start_point,
                                     const double& end_point,
                                     const int& minimum_n,
                                     const double& max_range,
                                     const double& min_seg_length){
+
+  //remove time stamps smaller than t_tar
+  NumericVector T_seg = clone(T_seg_orig) ;
+
+  T_seg = T_seg[T_seg>t_star] ;
 
   // generate and order the breakpoints
 
@@ -131,10 +136,10 @@ NumericVector initial_breakpoints(  const NumericVector& T_seg,
 
     }
 
-    NumericVector Bvec1(T_point.size() + 1) ;
+    NumericVector Bvec1(T_point.size() + 1,-100) ;
 
 
-    //update the last breakpoint
+    //update the last breakpoint: always after the end of the Update interval
     Bvec1[Bvec1.size()-1] = R::runif(end_point,end_point+max_range) ;
 
     if(T_point.size()>0){
@@ -149,7 +154,7 @@ NumericVector initial_breakpoints(  const NumericVector& T_seg,
 
     //add t_star as first breakpoint
     Bvec1_final.push_front(t_star) ;
-
+    
     // remove breakpoints creating segments smaller than 5 seconds
 
     NumericVector seg_length = diff(Bvec1_final) ;
@@ -175,7 +180,7 @@ NumericVector initial_breakpoints(  const NumericVector& T_seg,
 
         current_seg = 1 ;
 
-      }else if(count_value>0 & count_value< minimum_n){
+      }else if((count_value>0) & (count_value< minimum_n)){
 
         Rcout << "obs_position: " << obs_position << "\n" ;
         Rcout << "Bvec1_final: " << Bvec1_final << "\n" ;
@@ -209,7 +214,7 @@ NumericVector initial_breakpoints(  const NumericVector& T_seg,
 
     return Bvec1_final ;
 
-  }else if(T_seg.size()>0  & T_seg.size() < minimum_n){
+  }else if((T_seg.size()>0)  && (T_seg.size() < minimum_n)){
 
     //if less than minimum_n (but more than 0), create only 1 segment
 

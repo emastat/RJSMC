@@ -44,7 +44,8 @@ SMC(ts_data, parameters, settings)
 \item {n_ite}{(const int&), number of iteration to be performed in the RJMCMC}
 \item {burn_in}{(const int&) Number of iterations used as burn_in period.}
 \item {thinning}{(const int&) One every "thinning" iterations will be stored by the RJMCMC}
-\item {method}{(string}) set it to "turcotte" for applying the turcotte method for importance density approximation)
+\item {method}{(string}) set it to "turcotte" for applying the Turcotte method or to "waste_free" for applying the Chopin method for importance density approximation)
+\item {recycled_particles}{(int) number of particles to sample when performing the waste_free method. Default is 2}
 }}
 }
 \value{
@@ -60,8 +61,10 @@ The output of the function is a list with the following elements
 }
 }
 \description{
-Given an time series of time-stamps and messages this function run a particle filter with
-Reversible Jump Markov Chain Montecarlo steps for approximating the posterior distribution of the following state dynamics variables
+Given an time series of time-stamps and messages this function
+run a particle filter with Reversible Jump Markov Chain Montecarlo
+steps for approximating the posterior distribution of the following
+state dynamics variables
 \itemize{
 \item Z, ruling the length of each non-empty segment
 \item Q, ruling the rate of occurrence of the messages in non-empty segments

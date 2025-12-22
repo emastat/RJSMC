@@ -113,10 +113,10 @@ double r_dtpois(double x, double lambda){
 // [[Rcpp::plugins(cpp11)]]
 
 //' @title Function to assign each element of a vector "x" to one of N  unique intervals defined through the
-//' vector of breakpoint B; B[j]<=x<[j+1] j=1...N+1. The out is "j"
+//' vector of breakpoint B; \code{B[j]<=x<B[j+1]} j=1...N+1. The out is "j"
 //' @param x NumericVector. Vector  whose element need to ble allocated
 //' @param breaks NumericVector. Vector containing the N+1 breakpoints
-//' @return IntegerVector having the same size as x. Each element contains the index referring to the interval x[i] belongs to
+//' @return IntegerVector having the same size as x. Each element contains the index referring to the interval \code{x[i]} belongs to
 //' @export
 // [[Rcpp::export]]
 IntegerVector cpp_findInterval(NumericVector x, NumericVector breaks) {
@@ -125,10 +125,13 @@ IntegerVector cpp_findInterval(NumericVector x, NumericVector breaks) {
   NumericVector::iterator it, pos;
   IntegerVector::iterator out_it;
 
+  int max_index = breaks.size() - 1;
+
   for(it = x.begin(), out_it = out.begin(); it != x.end();
   ++it, ++out_it) {
     pos = std::upper_bound(breaks.begin(), breaks.end(), *it);
-    *out_it = std::distance(breaks.begin(), pos);
+    int index = std::distance(breaks.begin(), pos);
+    *out_it = (index > max_index) ? max_index : index;
   }
 
   return out;

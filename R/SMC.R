@@ -1,14 +1,16 @@
-#' SMC Function implementing particle filter for the model in  Gramuglia et al. 2020
+#' SMC Function implementing particle filter for the model in  Gramuglia et al. 2020 
 #'
-#' Given an time series of time-stamps and messages this function run a particle filter with
-#' Reversible Jump Markov Chain Montecarlo steps for approximating the posterior distribution of the following state dynamics variables
+#' Given an time series of time-stamps and messages this function
+#' run a particle filter with Reversible Jump Markov Chain Montecarlo
+#' steps for approximating the posterior distribution of the following
+#' state dynamics variables
 #'  \itemize{
 #'   \item Z, ruling the length of each non-empty segment
 #'   \item Q, ruling the rate of occurrence of the messages in non-empty segments
 #'   \item V, ruling the segment composition (in term of messages) in non-empty segments
 #'   \item F, ruling the length of empty-segments
 #'   }
-#' The algorithm approximate these posterior distributions by splitting the observation
+#' The algorithm approximate these posterior distributions by splitting the observation 
 #' time interval in sub-intervals defined by the custom parameter \code{length_UI}
 #'
 #' @param  ts_data list with data:
@@ -21,8 +23,8 @@
 #'    \item {U}{Number of levels of variable V}
 #'    \item {W}{Number of levels of variable Q}
 #'    \item {K}{Number of levels of variable Z}
-#'    \item {lambdamat}{matrix (U * num_logs) hosting the  probability mass for the messages in each V state}
-#'    \item {keyvec}{Shape parameters ruling the length of non-empty segments in different levels of Z state}
+#'    \item {lambdamat}{matrix (U * num_logs) hosting the  probability mass for the messages in each V state} 
+#'    \item {keyvec}{Shape parameters ruling the length of non-empty segments in different levels of Z state} 
 #'    \item {etavec}{Mean parameters ruling the length of non-empty segments in different levels of Z state}
 #'    \item {key0vec}{Shape parameters ruling the length of empty segments in different levels of F state}
 #'    \item {eta0vec}{Mean parameters ruling the length of empty segments in different levels of F state}
@@ -61,51 +63,80 @@
 #'  }
 #' @export
 
-  SMC = function( ts_data,
-                  parameters,
-                  settings){
+SMC = function( ts_data, 
+               parameters,
+               settings){
 
-    Yvec <- ts_data$Yvec
-    Tvec <- ts_data$Tvec
+  Yvec <- ts_data$Yvec 
+  Tvec <- ts_data$Tvec
 
-    length_UI <- settings$length_UI
-    n_particle <- settings$n_particle
-    num_logs <- settings$num_logs
-    Jss1 <- settings$Jss1
-    Js1s <- settings$Js1s
-    Smax <- settings$Smax
-    n_ite <- settings$n_ite
-    burn_in <- settings$burn_in
-    thinning <- settings$thinning
-    method <- settings$method
-    recycled_particles <- settings$recycled_particles
-    if(is.null(recycled_particles)){recycled_particles = 2}
+  length_UI <- settings$length_UI
+  n_particle <- settings$n_particle
+  num_logs <- settings$num_logs
+  Jss1 <- settings$Jss1
+  Js1s <- settings$Js1s
+  Smax <- settings$Smax
+  n_ite <- settings$n_ite
+  burn_in <- settings$burn_in
+  thinning <- settings$thinning
+  method <- settings$method
+  recycled_particles <- settings$recycled_particles
+  if(is.null(recycled_particles)){recycled_particles = 2}
 
-    U <- parameters$U
-    W <- parameters$W
-    K <- parameters$K
-    lambdamat <- parameters$lambdamat
-    keyvec <- parameters$keyvec
-    etavec <- parameters$etavec
-    key0vec <- parameters$key0vec
-    eta0vec <- parameters$eta0vec
-    alphavec <- parameters$alphavec
-    muvec <- parameters$muvec
-    probvec_V <- parameters$probvec_V
-    probvec_Z <- parameters$probvec_Z
-    probvec_Q <- parameters$probvec_Q
-    probvec_F <- parameters$probvec_F
-    P0 <- parameters$P0
-    minimum_n <- parameters$minimum_n
+  U <- parameters$U
+  W <- parameters$W
+  K <- parameters$K
+  lambdamat <- parameters$lambdamat
+  keyvec <- parameters$keyvec
+  etavec <- parameters$etavec
+  key0vec <- parameters$key0vec
+  eta0vec <- parameters$eta0vec
+  alphavec <- parameters$alphavec
+  muvec <- parameters$muvec
+  probvec_V <- parameters$probvec_V
+  probvec_Z <- parameters$probvec_Z
+  probvec_Q <- parameters$probvec_Q
+  probvec_F <- parameters$probvec_F
+  P0 <- parameters$P0
+  minimum_n <- parameters$minimum_n
 
-    # run the Sequential Monte Carlo algorithm for the  whole
-    # observation period
-    # (from first to last observed time-stamp of the dataset)
+  # run the Sequential Monte Carlo algorithm for the  whole
+  # observation period
+  # (from first to last observed time-stamp of the dataset)
 
 
-    if(method == "turcotte"){
+  if(method == "turcotte"){
 
-      out_SMC_cpp <- SMC_turcotte_cpp(Yvec,
+    out_SMC_cpp <- SMC_turcotte_cpp(Yvec,
+                                    Tvec,
+                                    length_UI,
+                                    n_particle,
+                                    U,
+                                    W,
+                                    K,
+                                    num_logs,
+                                    lambdamat,
+                                    keyvec,
+                                    etavec,
+                                    key0vec,
+                                    eta0vec,
+                                    alphavec,
+                                    muvec,
+                                    probvec_V,
+                                    probvec_Z,
+                                    probvec_Q,
+                                    probvec_F,
+                                    P0,
+                                    minimum_n,
+                                    Jss1,
+                                    Js1s,
+                                    Smax,
+                                    n_ite,
+                                    burn_in,
+                                    thinning)
+  }else{
+
+    out_SMC_cpp <- SMC_waste_free_cpp(Yvec,
                                       Tvec,
                                       length_UI,
                                       n_particle,
@@ -131,144 +162,143 @@
                                       Smax,
                                       n_ite,
                                       burn_in,
-                                      thinning)
-    }else{
-
-      out_SMC_cpp <- SMC_waste_free_cpp(Yvec,
-                                        Tvec,
-                                        length_UI,
-                                        n_particle,
-                                        U,
-                                        W,
-                                        K,
-                                        num_logs,
-                                        lambdamat,
-                                        keyvec,
-                                        etavec,
-                                        key0vec,
-                                        eta0vec,
-                                        alphavec,
-                                        muvec,
-                                        probvec_V,
-                                        probvec_Z,
-                                        probvec_Q,
-                                        probvec_F,
-                                        P0,
-                                        minimum_n,
-                                        Jss1,
-                                        Js1s,
-                                        Smax,
-                                        n_ite,
-                                        burn_in,
-                                        thinning,
-                                        recycled_particles)
-
-    }
-
-
-    print( "SMC completed: extracting results")
-
-    # from the output of the SMC extract the marginal posterior
-    # distributions for
-    # the states V, Z, Q, F computed at some fixed discretization
-    # point along the
-    # observation period. As the SMC computed the approximated
-    # posterior distribution
-    # one update interval at a time so the results will be presented
-
-    #number of Update intervals
-    n_UI <- out_SMC_cpp$n_UI
-
-    #vector  with bounds between the Update Intervals
-    UI_bounds <- out_SMC_cpp$UI_bounds
-
-
-    posteriors_container_V <- NULL
-    posteriors_container_Z <- NULL
-    posteriors_container_Q <- NULL
-    posteriors_container_F <- NULL
-    points_container <- NULL
-    UI_index_vector <- NULL
-
-    non_empty_UI <- setdiff(
-      1:(length(UI_bounds)-1),
-      which(sapply(out_SMC_cpp$storage_B, is.null
-                   )
-            )
-      )
-
-    for(i in non_empty_UI){
-
-      sum_na = sum(is.na(unlist(out_SMC_cpp$storage_weight[[i]])))
-
-      if(sum_na>0){stop("there are NA, checkout")}
-
-      results_UI <- get_results(UI_bounds[i],
-                                UI_bounds[i+1],
-                                n_particle,
-                                0.01,
-                                out_SMC_cpp$storage_B[[i]],
-                                out_SMC_cpp$storage_V[[i]],
-                                out_SMC_cpp$storage_Z[[i]],
-                                out_SMC_cpp$storage_Q[[i]],
-                                out_SMC_cpp$storage_F[[i]],
-                                U,
-                                W,
-                                K,
-                                2)
-
-
-      temp_container_V <- compute_posterior(results_UI$num_discr_intervals,
-                                            n_particle,
-                                            results_UI$state_container_V,
-                                            U+1,
-                                            unlist(out_SMC_cpp$storage_weight[[i]]))
-
-      temp_container_Z <- compute_posterior(results_UI$num_discr_intervals,
-                                            n_particle,
-                                            results_UI$state_container_Z,
-                                            K+1,
-                                            unlist(out_SMC_cpp$storage_weight[[i]]))
-
-      temp_container_Q <- compute_posterior(results_UI$num_discr_intervals,
-                                             n_particle,
-                                             results_UI$state_container_Q,
-                                             W+1,
-                                             unlist(out_SMC_cpp$storage_weight[[i]]))
-
-      temp_container_F <- compute_posterior(results_UI$num_discr_intervals,
-                                             n_particle,
-                                             results_UI$state_container_F,
-                                             2+1,
-                                             unlist(out_SMC_cpp$storage_weight[[i]]))
-
-
-
-
-
-      posteriors_container_V <- rbind(posteriors_container_V,temp_container_V)
-
-      posteriors_container_Z <- rbind(posteriors_container_Z,temp_container_Z)
-
-      posteriors_container_Q <- rbind(posteriors_container_Q,temp_container_Q)
-
-      posteriors_container_F <- rbind(posteriors_container_F,temp_container_F)
-
-
-      points_container <- c(points_container, results_UI$discr_points)
-
-      UI_index_vector <- c(UI_index_vector, rep(i, length(results_UI$discr_points)))
-
-    }
-
-
-  return(new("RJSMC",n_UI = n_UI,
-              points_container = points_container,
-              posteriors_container_V = posteriors_container_V,
-              posteriors_container_Z = posteriors_container_Z,
-              posteriors_container_Q = posteriors_container_Q,
-              posteriors_container_F = posteriors_container_F,
-              UI_index_vector = UI_index_vector
-              ))
+                                      thinning,
+                                      recycled_particles)
 
   }
+
+
+  print( "SMC completed: extracting results")
+
+  # from the output of the SMC extract the marginal posterior
+  # distributions for
+  # the states V, Z, Q, F computed at some fixed discretization
+  # point along the
+  # observation period. As the SMC computed the approximated
+  # posterior distribution
+  # one update interval at a time so the results will be presented
+
+  #number of Update intervals
+  n_UI <- out_SMC_cpp$n_UI
+
+  #vector  with bounds between the Update Intervals
+  UI_bounds <- out_SMC_cpp$UI_bounds
+
+
+  posteriors_container_V <- NULL
+  posteriors_container_Z <- NULL
+  posteriors_container_Q <- NULL
+  posteriors_container_F <- NULL
+  points_container <- NULL
+  UI_index_vector <- NULL
+
+  non_empty_UI <- setdiff(
+    1:(length(UI_bounds)-1),
+    which(sapply(out_SMC_cpp$storage_B, is.null
+                  )
+          )
+    )
+
+  non_empty_UI_bounds = list()
+  SP = UI_bounds[1]
+  for(i in non_empty_UI){
+    EP = UI_bounds[i+1]
+    non_empty_UI_bounds = c(non_empty_UI_bounds,list(c(SP,EP)))
+    SP = EP
+  }
+
+  for(i in 1:length(non_empty_UI)){
+
+    non_empty_idx = non_empty_UI[[i]]
+
+    sum_na = sum(is.na(unlist(out_SMC_cpp$storage_weight[[non_empty_idx]])))
+
+    if(sum_na>0){stop("SMC.R-->there are NA, checkout")}
+
+    # Save debug data only if settings$dir is provided
+    # These are temporary debugging files and should be optional
+    if(!is.null(settings$dir) && settings$dir != ""){
+      saveRDS(UI_bounds, file =paste0(settings$dir,"UI_bounds.rds"))
+      saveRDS(n_particle, file =paste0(settings$dir,"n_particle.rds"))
+      saveRDS(out_SMC_cpp$storage_B, file =paste0(settings$dir,"out_SMC_cpp$storage_B.rds"))
+      saveRDS(out_SMC_cpp$storage_V, file =paste0(settings$dir,"out_SMC_cpp$storage_V.rds"))
+      saveRDS(out_SMC_cpp$storage_Z, file =paste0(settings$dir,"out_SMC_cpp$storage_Z.rds"))
+      saveRDS(out_SMC_cpp$storage_Q, file =paste0(settings$dir,"out_SMC_cpp$storage_Q.rds"))
+      saveRDS(out_SMC_cpp$storage_F, file =paste0(settings$dir,"out_SMC_cpp$storage_F.rds"))
+      saveRDS(U, file =paste0(settings$dir,"U.rds"))
+      saveRDS(W, file =paste0(settings$dir,"W.rds"))
+      saveRDS(K, file =paste0(settings$dir,"K.rds"))
+    }
+
+    results_UI <- get_results(non_empty_UI_bounds[[i]][1],
+                              non_empty_UI_bounds[[i]][2],
+                              n_particle,
+                              0.01,
+                              out_SMC_cpp$storage_B[[non_empty_idx]],
+                              out_SMC_cpp$storage_V[[non_empty_idx]],
+                              out_SMC_cpp$storage_Z[[non_empty_idx]],
+                              out_SMC_cpp$storage_Q[[non_empty_idx]],
+                              out_SMC_cpp$storage_F[[non_empty_idx]],
+                              U,
+                              W,
+                              K,
+                              2)
+
+
+    #stop("SMC --> check results_UI")
+
+
+    temp_container_V <- compute_posterior(results_UI$num_discr_intervals,
+                                          n_particle,
+                                          results_UI$state_container_V,
+                                          U+1,
+                                          unlist(out_SMC_cpp$storage_weight[[non_empty_idx]]))
+
+    temp_container_Z <- compute_posterior(results_UI$num_discr_intervals,
+                                          n_particle,
+                                          results_UI$state_container_Z,
+                                          K+1,
+                                          unlist(out_SMC_cpp$storage_weight[[non_empty_idx]]))
+
+    temp_container_Q <- compute_posterior(results_UI$num_discr_intervals,
+                                            n_particle,
+                                            results_UI$state_container_Q,
+                                            W+1,
+                                            unlist(out_SMC_cpp$storage_weight[[non_empty_idx]]))
+
+    temp_container_F <- compute_posterior(results_UI$num_discr_intervals,
+                                            n_particle,
+                                            results_UI$state_container_F,
+                                            2+1,
+                                            unlist(out_SMC_cpp$storage_weight[[non_empty_idx]]))
+
+
+
+
+
+    posteriors_container_V <- rbind(posteriors_container_V,temp_container_V)
+
+    posteriors_container_Z <- rbind(posteriors_container_Z,temp_container_Z)
+
+    posteriors_container_Q <- rbind(posteriors_container_Q,temp_container_Q)
+
+    posteriors_container_F <- rbind(posteriors_container_F,temp_container_F)
+
+
+    points_container <- c(points_container, results_UI$discr_points)
+
+    UI_index_vector <- c(UI_index_vector, rep(non_empty_idx, length(results_UI$discr_points)))
+
+  }
+
+
+return(new("RJSMC",n_UI = n_UI,
+            points_container = points_container,
+            posteriors_container_V = posteriors_container_V,
+            posteriors_container_Z = posteriors_container_Z,
+            posteriors_container_Q = posteriors_container_Q,
+            posteriors_container_F = posteriors_container_F,
+            UI_index_vector = UI_index_vector
+            ))
+
+}

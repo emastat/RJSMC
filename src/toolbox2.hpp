@@ -7,4 +7,6 @@ NumericVector stabilize(const NumericVector weight_vec);
 
 IntegerVector table_cpp(IntegerVector X, int n,bool include_zero);
 
+void saveRObject(SEXP rObject, std::string filename);
+
 #endif

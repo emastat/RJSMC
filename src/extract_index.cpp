@@ -11,9 +11,9 @@ using namespace Rcpp;
 //' @param  upper (const double), the lower bound
 //' @return 3-element vector with:
 //' \describe{
-//' \item{element [0]}{length of the subsetted vector}
-//' \item{element [1]}{index of the first element of the subsetted vector }
-//' \item{element [2]}{index of the last element of the subsetted vector. If the last index is "-1" then no elements sastisfy the constraint}
+//' \item{element \code{[0]}}{length of the subsetted vector}
+//' \item{element \code{[1]}}{index of the first element of the subsetted vector }
+//' \item{element \code{[2]}}{index of the last element of the subsetted vector. If the last index is "-1" then no elements sastisfy the constraint}
 //' }
 // [[Rcpp::export]]
 NumericVector extract_index(const NumericVector& x,
@@ -23,28 +23,44 @@ NumericVector extract_index(const NumericVector& x,
   NumericVector out=(3) ;
 
    int i = 0;
-
    int x_length = x.size() ;
 
-  while(x[i] <= lower & i < x_length) i = i + 1;
+  while((i < x_length) && (x[i] <= lower)) {
+    i = i + 1;
+  }
+
+  // If all elements are <= lower, no valid start index exists
+  if(i >= x_length){
+    out[0] = 0;  // count = 0
+    out[1] = -1; // no valid start index
+    out[2] = -1; // no valid end index
+    return out;
+  }
 
   int j = i;
-
-  out[1] = i ; //store the left index
+  out[1] = i ;
 
  if(j<x_length){
 
-    while(x[j] < upper  & j < x_length ) j = j + 1;
+    while((j < x_length) && (x[j] < upper)) {
+      j = j + 1;
+    }
 
-  j=j-1 ;
+    j = j - 1 ;
+    
+    if(j < 0){
+      j = -1;
+      out[2] = j;
+      return out;
+    }
+    if(j >= x_length){
+      j = x_length - 1;
+    }
 
-  if(j>=i){
-
-    out[0] = j-i +1 ; //store the length of the selected vector
-
-    out[2] = j ; //store the right index
-
-  }
+    if(j>=i){
+      out[0] = j-i +1 ;
+      out[2] = j ;
+    }
 
 
  }else{ j =-1 ; out[2] = j ; }

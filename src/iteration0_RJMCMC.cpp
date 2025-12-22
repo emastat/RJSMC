@@ -73,9 +73,7 @@ List iteration0_RJMCMC (   const NumericVector& T_seg,
                            const double& max_range,
                            const int& Smax){
 
-
     // generate initial Breakpoint Vector
-
     double min_seg_length = 1/720 ;
 
     NumericVector Bvec = initial_breakpoints( T_seg,
@@ -86,15 +84,11 @@ List iteration0_RJMCMC (   const NumericVector& T_seg,
                                               max_range,
                                               min_seg_length) ;
 
-
-    // number of segments
+    // number of segments (Bvec has S+1 breakpoints defining S segments)
     int S = Bvec.size() - 1 ;
 
-
     // Compute states for the generated segments
-
-
-   List out_state= initial_state( T_seg,
+    List out_state = initial_state( T_seg,
                                   Y_seg,
                                   S,
                                   Bvec,
@@ -118,8 +112,6 @@ List iteration0_RJMCMC (   const NumericVector& T_seg,
                                   empty_mix,
                                   minimum_n);
 
-
-
      IntegerVector Vvec_partial =clone(as<IntegerVector>( out_state["Vvec"])) ;
      IntegerVector Zvec_partial =clone(as<IntegerVector>(  out_state["Zvec"]));
      IntegerVector Fvec_partial =clone(as<IntegerVector>(  out_state["Fvec"])) ;
@@ -129,20 +121,28 @@ List iteration0_RJMCMC (   const NumericVector& T_seg,
 
      if(S>Smax){ stop("number of segments S greater than Smax. Choose a bigger Smax");}
 
-     NumericVector Bvec_final = NumericVector(Smax+1) ;
+     NumericVector Bvec_final = NumericVector(Smax+1,-100.0) ;
      Bvec_final[Range(0,S)] = Bvec ;
 
      IntegerVector Zvec_final = IntegerVector(Smax) ;
-     Zvec_final[Range(0,S-1)] = Zvec_partial ;
+     for(int i=0; i<S; i++){
+       Zvec_final[i] = Zvec_partial[i] ;
+     }
 
      IntegerVector Vvec_final = IntegerVector(Smax) ;
-     Vvec_final[Range(0,S-1)] = Vvec_partial ;
+     for(int i=0; i<S; i++){
+       Vvec_final[i] = Vvec_partial[i] ;
+     }
 
      IntegerVector Qvec_final = IntegerVector(Smax) ;
-     Qvec_final[Range(0,S-1)] = Qvec_partial ;
+     for(int i=0; i<S; i++){
+       Qvec_final[i] = Qvec_partial[i] ;
+     }
 
      IntegerVector Fvec_final = IntegerVector(Smax) ;
-     Fvec_final[Range(0,S-1)] = Fvec_partial ;
+     for(int i=0; i<S; i++){
+       Fvec_final[i] = Fvec_partial[i] ;
+     }
 
 
 

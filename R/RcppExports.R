@@ -41,6 +41,7 @@
 #' @param container_F  List for with Fvec generated inside the current Update Interval, for each particle
 #' @param Svec vector with number of segment in each particle
 #' @param weight_vec vector with the current normalized weight for each particle
+#' @param empty_seg (Logical) if true then the importance density for empty segments is used
 #' @return The function does not explicitly return any object: However, by reference 9 element are updated:
 #' \describe{
 #' \item{container_B}{List for with Bvec generated inside the current Update Interval, for each particle}
@@ -54,8 +55,8 @@
 #' \item{weight_vec}{vector with the updated  non normalized weight for each particle}
 #' }
 #' @export
-RJMCMC_SMC <- function(T_seg, Y_seg, U, K, W, start_point, end_point, t_star, num_logs, lambdamat, keyvec, etavec, key0vec, eta0vec, alphavec, muvec, probvec_V, probvec_Z, probvec_Q, probvec_F, P0, minimum_n, Jss1, Js1s, Smax, n_ite, burn_in, thinning, n_particle, particle_index_vec, V_last_complete, B_last, container_B, container_V, container_Z, container_Q, container_F, Svec, weight_vec) {
-    .Call(`_RJSMC_RJMCMC_SMC`, T_seg, Y_seg, U, K, W, start_point, end_point, t_star, num_logs, lambdamat, keyvec, etavec, key0vec, eta0vec, alphavec, muvec, probvec_V, probvec_Z, probvec_Q, probvec_F, P0, minimum_n, Jss1, Js1s, Smax, n_ite, burn_in, thinning, n_particle, particle_index_vec, V_last_complete, B_last, container_B, container_V, container_Z, container_Q, container_F, Svec, weight_vec)
+RJMCMC_SMC <- function(T_seg, Y_seg, U, K, W, start_point, end_point, t_star, num_logs, lambdamat, keyvec, etavec, key0vec, eta0vec, alphavec, muvec, probvec_V, probvec_Z, probvec_Q, probvec_F, P0, minimum_n, Jss1, Js1s, Smax, n_ite, burn_in, thinning, n_particle, particle_index_vec, V_last_complete, B_last, container_B, container_V, container_Z, container_Q, container_F, Svec, weight_vec, empty_seg) {
+    invisible(.Call(`_RJSMC_RJMCMC_SMC`, T_seg, Y_seg, U, K, W, start_point, end_point, t_star, num_logs, lambdamat, keyvec, etavec, key0vec, eta0vec, alphavec, muvec, probvec_V, probvec_Z, probvec_Q, probvec_F, P0, minimum_n, Jss1, Js1s, Smax, n_ite, burn_in, thinning, n_particle, particle_index_vec, V_last_complete, B_last, container_B, container_V, container_Z, container_Q, container_F, Svec, weight_vec, empty_seg))
 }
 
 #' SMC Function implementing particle filter for the model in  Gramuglia et al. 2020 using the importance density approximation
@@ -191,6 +192,7 @@ SMC_waste_free_cpp <- function(Yvec, Tvec, length_UI, n_particle, U, W, K, num_l
 #' @param minimum_n (const int&) minimum number of observations in a non-empty segment
 #' @param start_point (double, default is 0.0) start of the update interval
 #' @param end_point (double, default is 0.0) end of the update interval; to be used for partially observed segments
+#' @name backward_function
 NULL
 
 #' @title collapsed_full_conditional_Q
@@ -239,9 +241,9 @@ compute_posterior <- function(num_discr_intervals, num_particles, state_containe
 #' @param  upper (const double), the lower bound
 #' @return 3-element vector with:
 #' \describe{
-#' \item{element [0]}{length of the subsetted vector}
-#' \item{element [1]}{index of the first element of the subsetted vector }
-#' \item{element [2]}{index of the last element of the subsetted vector. If the last index is "-1" then no elements sastisfy the constraint}
+#' \item{element \code{[0]}}{length of the subsetted vector}
+#' \item{element \code{[1]}}{index of the first element of the subsetted vector }
+#' \item{element \code{[2]}}{index of the last element of the subsetted vector. If the last index is "-1" then no elements sastisfy the constraint}
 #' }
 extract_index <- function(x, lower, upper) {
     .Call(`_RJSMC_extract_index`, x, lower, upper)
@@ -279,6 +281,7 @@ extract_index <- function(x, lower, upper) {
 #' @param minimum_n (const int&) minimum number of observations in a non-empty segment
 #' @param start_point (double, default is 0.0) start of the update interval
 #' @param end_point (double, default is 0.0) end of the update interval; to be used for partially observed segments
+#' @name forward_function
 NULL
 
 #' @title full_conditional_F
@@ -294,8 +297,7 @@ NULL
 #' \item{F_new}{int, the sample F state for the selected segment}
 #' \item{eval_densF}{double, value of the  log full conditional for either the new F sampled of the current F inputed ( depending on sample_F)}
 #' }
-NULL
-
+#' @name full_conditional_F
 full_conditional_F <- function(F, L, key0vec, eta0vec, probvec_F, sample_F = FALSE) {
     .Call(`_RJSMC_full_conditional_F`, F, L, key0vec, eta0vec, probvec_F, sample_F)
 }
@@ -321,8 +323,7 @@ full_conditional_F <- function(F, L, key0vec, eta0vec, probvec_F, sample_F = FAL
 #' \item{V_new}{int, the sample Vstate for the selected segment or the one inputed}
 #' \item{eval_densV}{double, value of the log full conditional for either the new sampled V or the current Q inputed ( depending on sample_V)}
 #' }
-NULL
-
+#' @name full_conditional_V
 full_conditional_V <- function(V, U, num_logs, T_seg, Y_seg, LB, UB, lambdamat, probvec_V, V_left, P0, end_point = 0.0, open_segment = FALSE, sample_V = FALSE) {
     .Call(`_RJSMC_full_conditional_V`, V, U, num_logs, T_seg, Y_seg, LB, UB, lambdamat, probvec_V, V_left, P0, end_point, open_segment, sample_V)
 }
@@ -341,14 +342,12 @@ full_conditional_V <- function(V, U, num_logs, T_seg, Y_seg, LB, UB, lambdamat, 
 #' \item{Z_new}{int, the sample Z state for the selected segment}
 #' \item{eval_densZ}{double, value of the  log full conditional for either the new Z sampled of the current Z inputed ( depending on sample_Z)}
 #' }
-NULL
-
+#' @name full_conditional_Z
 full_conditional_Z <- function(Z, K, L, keyvec, etavec, probvec_Z, sample_Z = FALSE) {
     .Call(`_RJSMC_full_conditional_Z`, Z, K, L, keyvec, etavec, probvec_Z, sample_Z)
 }
 
 #' @title Incremental_weight
-#'
 #' Function for computing the log incremental weight for a particle
 #' @param T_seg Vector with time stamps within the update interval
 #' @param Y_seg Vector with the messages within the update interval
@@ -386,17 +385,17 @@ incremental_weight <- function(T_seg, Y_seg, V, Z, Q, F, U, K, W, B_last, B1, nu
 
 #' @title initial_breakpoints
 #' Function to initialize the changepoint vector during the first iteration of the RJMCMC
-#' @param T_seg Vector with time stamps within the update interval
+#' @param T_seg_orig Vector with time stamps within the update interval
 #' @param t_star Estimate of the latest changepoint simulated when performing the RJMCMC during the previous iteration of the SMC (precedent update interval)
 #' @param start_point Left bound of the current update interval
 #' @param end_point Right bound of the current update interval
 #' @param minimum_n minimum number of observation allowed in a non-empty segment
 #' @param max_range (const double&) time interval in which the last changepoint is allowed to be place after the end point (end_point;end_point+1)
 #' @param min_seg_length (const double) minimum length allowed for a segment to be valid
-#' @return NumericVector with the generated changepoints. Starting at t_star, ending at B_k>UB
+#' @return NumericVector with the generated changepoints. Starting with t_star, ending with B_k > UB
 #' @export
-initial_breakpoints <- function(T_seg, t_star, start_point, end_point, minimum_n, max_range, min_seg_length) {
-    .Call(`_RJSMC_initial_breakpoints`, T_seg, t_star, start_point, end_point, minimum_n, max_range, min_seg_length)
+initial_breakpoints <- function(T_seg_orig, t_star, start_point, end_point, minimum_n, max_range, min_seg_length) {
+    .Call(`_RJSMC_initial_breakpoints`, T_seg_orig, t_star, start_point, end_point, minimum_n, max_range, min_seg_length)
 }
 
 #' @title initial_state
@@ -542,6 +541,24 @@ posterior_evaluation <- function(T_seg, Y_seg, V, Z, Q, F, U, K, W, LB, UB, num_
     .Call(`_RJSMC_posterior_evaluation`, T_seg, Y_seg, V, Z, Q, F, U, K, W, LB, UB, num_logs, lambdamat, keyvec, etavec, key0vec, eta0vec, alphavec, muvec, probvec_V, probvec_Z, probvec_Q, probvec_F, V_left, P0, minimum_n, count, end_point, open_segment)
 }
 
+#' @title systematic_resampling:  function for performing systematic resampling
+#'
+#' @param weight_vec vector with the current normalized weight for each particle
+#' @param container_B List for with Bvec generated inside the current Update Interval, for each particle
+#' @param container_V List for with Vvec generated inside the current Update Interval, for each particle
+#' @param container_Z  List for with Zvec generated inside the current Update Interval, for each particle
+#' @param container_Q  List for with Qvec generated inside the current Update Interval, for each particle
+#' @param container_F  List for with Fvec generated inside the current Update Interval, for each particle
+#' @param Svec vector with number of segment in each particle
+#' @param V_last_complete Vector with the V state for the last complete segment of each particle
+#' @param B_last (NumericVector&) Vector with the last simulated changepoint WITHIN the Update Interval, at the previous SMC iteration
+#' @param n_particle number of particles created
+#' @return The function does not explicitly return any object: However, by reference 9 element are updated:
+#' @export
+resampling_func <- function(weight_vec, container_B, container_V, container_Z, container_Q, container_F, Svec, V_last_complete, B_last, n_particle) {
+    .Call(`_RJSMC_resampling_func`, weight_vec, container_B, container_V, container_Z, container_Q, container_F, Svec, V_last_complete, B_last, n_particle)
+}
+
 #' @title center_segment_box
 #' Function for computing all the necessary quantities needed for updating/evaluating a CLOSED segment or an OPEN segment with at least 1 obs inside.
 #' This function will either sample new states V,Z,Q,F or use the current ones to evaluate the joint proposal and
@@ -620,8 +637,7 @@ segment_box <- function(T_seg, Y_seg, V, Z, Q, F, U, K, W, LB, UB, num_logs, lam
 #' @param minimum_n (const int&) minimum number of observations in a non-empty segment
 #' @param start_point (double, default is 0.0) start of the update interval
 #' @param end_point (double, default is 0.0) end of the update interval; to be used for partially observed segments
-NULL
-
+#' @name shift_function
 shift_function <- function(S, Tvec, Yvec, U, K, W, probvec_V, probvec_Z, probvec_Q, probvec_F, lambdamat, keyvec, etavec, key0vec, eta0vec, alphavec, muvec, num_logs, Bvec, Zvec, Qvec, Vvec, Fvec, Jss1, Js1s, P0, minimum_n, start_point = 0.0, end_point = 0.0) {
     invisible(.Call(`_RJSMC_shift_function`, S, Tvec, Yvec, U, K, W, probvec_V, probvec_Z, probvec_Q, probvec_F, lambdamat, keyvec, etavec, key0vec, eta0vec, alphavec, muvec, num_logs, Bvec, Zvec, Qvec, Vvec, Fvec, Jss1, Js1s, P0, minimum_n, start_point, end_point))
 }
@@ -636,13 +652,17 @@ make_table <- function(X, K, inc_zero = FALSE) {
 }
 
 #' @title Function to assign each element of a vector "x" to one of N  unique intervals defined through the
-#' vector of breakpoint B; B[j]<=x<[j+1] j=1...N+1. The out is "j"
+#' vector of breakpoint B; \code{B[j]<=x<B[j+1]} j=1...N+1. The out is "j"
 #' @param x NumericVector. Vector  whose element need to ble allocated
 #' @param breaks NumericVector. Vector containing the N+1 breakpoints
-#' @return IntegerVector having the same size as x. Each element contains the index referring to the interval x[i] belongs to
+#' @return IntegerVector having the same size as x. Each element contains the index referring to the interval \code{x[i]} belongs to
 #' @export
 cpp_findInterval <- function(x, breaks) {
     .Call(`_RJSMC_cpp_findInterval`, x, breaks)
+}
+
+saveRObject <- function(rObject, filename) {
+    invisible(.Call(`_RJSMC_saveRObject`, rObject, filename))
 }
 
 #' @title augment_vecZQFV
@@ -716,5 +736,29 @@ augment_Bvec <- function(Bvec, T_p, IN, S) {
 #' @export
 reduce_Bvec <- function(Bvec, BR, S) {
     invisible(.Call(`_RJSMC_reduce_Bvec`, Bvec, BR, S))
+}
+
+#' @title weights_correction
+#' Function for computing the weights correction based on the importance density for a segment
+#' @param T_seg Vector with time stamps within the update interval
+#' @param break_sample_output (const List&) List of breakpoint vectors generated with the Importance Sampling
+#' @param M (const int&) number of iteration performed in the Importance Sampling
+#' @param K (const int&) Number of levels of the Z state
+#' @param keyvec (const NumericVector&) Shape parameters ruling the length of non-empty segments in different levels of Z state
+#' @param etavec (const NumericVector&) Mean parameters ruling the length of non-empty segments in different levels of Z state
+#' @param key0vec (const NumericVector&) Shape parameters ruling the length of empty segments in different levels of F state
+#' @param eta0vec (const NumericVector&) Mean parameters ruling the length of empty segments in different levels of F state
+#' @param probvec_Z (const NumericVector&) probability mass for the Z state
+#' @param probvec_F (const NumericVector&) probability mass for the F state
+#' @param probvec_Q (const NumericVector&) probability mass for the Q state
+#' @param alphavec (const NumericVector&) Shape parameters ruling the rate of occurrence of segment for the different levels of the Q state
+#' @param muvec (const NumericVector&) Mean parameters ruling the rate of occurrence of segment for the different levels of the Q state
+#' @param minimum_n (const int&) minimum number of observations that must be observed in a non-empty segment
+#' @param W (const int&) Number of levels for the Q state
+#' @param P0 (const double&) Probability to observe an empty segment after a non-empty one
+#' @return correction weight (double)
+#' @export
+weigths_correction <- function(T_seg, break_sample_output, M, K, keyvec, etavec, key0vec, eta0vec, probvec_Z, probvec_F, probvec_Q, alphavec, muvec, W, P0) {
+    .Call(`_RJSMC_weigths_correction`, T_seg, break_sample_output, M, K, keyvec, etavec, key0vec, eta0vec, probvec_Z, probvec_F, probvec_Q, alphavec, muvec, W, P0)
 }
 

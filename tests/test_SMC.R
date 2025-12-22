@@ -2,7 +2,14 @@
 
 #load the "english_words" data
 #data("english_words")
-library(RJSMC)
+rm(list=ls())
+set.seed(32453)    ##Works
+#set.seed(45635)     ##Gets an error
+
+devtools::load_all()
+
+library(mclust)
+library(fitdistrplus)
 
 Bvec <- english_words$Bvec
 Vvec <- english_words$Vvec
@@ -14,9 +21,6 @@ Tvec <- english_words$Tvec
 Yvec <- english_words$Yvec
 
 ts_data <- list()
-#ts_data$Yvec <- Yvec[Tvec>Bvec[1] & Tvec<Bvec[20]]
-#ts_data$Tvec <- Tvec[Tvec>Bvec[1] & Tvec<Bvec[20]]
-
 ts_data$Yvec <- Yvec
 ts_data$Tvec <- Tvec
 
@@ -40,22 +44,24 @@ parameters$minimum_n <- english_words$minimum_n
 
 settings <- list()
 settings$num_logs <- english_words$num_logs
-settings$length_UI <- 4
-settings$n_particle <- 1000
+settings$length_UI <- 1
+settings$n_particle <- 5000
 settings$Jss1 <- 1/3
 settings$Js1s <- 1/3
 settings$Smax <- 150
-settings$n_ite <- 20000
-settings$burn_in <- 10000
-settings$thinning <- 10
-settings$method <- "waste_free"
+settings$n_ite <- 50000
+settings$burn_in <- 20000
+settings$thinning <- 5
+settings$method <- "turcotte"
 
+#We need that (n_ite-burn_in)/thinning > n_particle
 
 out_SMC <- RJSMC::SMC(ts_data = ts_data,
-                      parameters = parameters,
-                      settings = settings)
+                    parameters = parameters,
+                    settings = settings)
 
-
-plot(out_SMC,truth=list(B=english_words$Bvec,cl=english_words$Vvec))
-
+## plot with observations
+plot(out_SMC, 
+     truth=list(B=english_words$Bvec, cl=english_words$Vvec),
+     observations=list(Tvec=Tvec),time_to_date=TRUE)
 

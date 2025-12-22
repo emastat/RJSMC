@@ -12,10 +12,9 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // RJMCMC_SMC
-List RJMCMC_SMC(const NumericVector& T_seg, const IntegerVector& Y_seg, const int& U, const int& K, const int& W, const double& start_point, const double& end_point, double& t_star, const int& num_logs, const NumericMatrix& lambdamat, const NumericVector& keyvec, const NumericVector& etavec, const NumericVector& key0vec, const NumericVector& eta0vec, const NumericVector& alphavec, const NumericVector& muvec, const NumericVector& probvec_V, const NumericVector& probvec_Z, const NumericVector& probvec_Q, const NumericVector& probvec_F, const double& P0, const int& minimum_n, const double& Jss1, const double& Js1s, const int& Smax, const int& n_ite, const int& burn_in, const int& thinning, const int& n_particle, const IntegerVector& particle_index_vec, IntegerVector& V_last_complete, NumericVector& B_last, List& container_B, List& container_V, List& container_Z, List& container_Q, List& container_F, IntegerVector& Svec, NumericVector& weight_vec);
-RcppExport SEXP _RJSMC_RJMCMC_SMC(SEXP T_segSEXP, SEXP Y_segSEXP, SEXP USEXP, SEXP KSEXP, SEXP WSEXP, SEXP start_pointSEXP, SEXP end_pointSEXP, SEXP t_starSEXP, SEXP num_logsSEXP, SEXP lambdamatSEXP, SEXP keyvecSEXP, SEXP etavecSEXP, SEXP key0vecSEXP, SEXP eta0vecSEXP, SEXP alphavecSEXP, SEXP muvecSEXP, SEXP probvec_VSEXP, SEXP probvec_ZSEXP, SEXP probvec_QSEXP, SEXP probvec_FSEXP, SEXP P0SEXP, SEXP minimum_nSEXP, SEXP Jss1SEXP, SEXP Js1sSEXP, SEXP SmaxSEXP, SEXP n_iteSEXP, SEXP burn_inSEXP, SEXP thinningSEXP, SEXP n_particleSEXP, SEXP particle_index_vecSEXP, SEXP V_last_completeSEXP, SEXP B_lastSEXP, SEXP container_BSEXP, SEXP container_VSEXP, SEXP container_ZSEXP, SEXP container_QSEXP, SEXP container_FSEXP, SEXP SvecSEXP, SEXP weight_vecSEXP) {
+void RJMCMC_SMC(const NumericVector& T_seg, const IntegerVector& Y_seg, const int& U, const int& K, const int& W, const double& start_point, const double& end_point, const double& t_star, const int& num_logs, const NumericMatrix& lambdamat, const NumericVector& keyvec, const NumericVector& etavec, const NumericVector& key0vec, const NumericVector& eta0vec, const NumericVector& alphavec, const NumericVector& muvec, const NumericVector& probvec_V, const NumericVector& probvec_Z, const NumericVector& probvec_Q, const NumericVector& probvec_F, const double& P0, const int& minimum_n, const double& Jss1, const double& Js1s, const int& Smax, const int& n_ite, const int& burn_in, const int& thinning, const int& n_particle, const IntegerVector& particle_index_vec, IntegerVector& V_last_complete, NumericVector& B_last, List& container_B, List& container_V, List& container_Z, List& container_Q, List& container_F, IntegerVector& Svec, NumericVector& weight_vec, const bool& empty_seg);
+RcppExport SEXP _RJSMC_RJMCMC_SMC(SEXP T_segSEXP, SEXP Y_segSEXP, SEXP USEXP, SEXP KSEXP, SEXP WSEXP, SEXP start_pointSEXP, SEXP end_pointSEXP, SEXP t_starSEXP, SEXP num_logsSEXP, SEXP lambdamatSEXP, SEXP keyvecSEXP, SEXP etavecSEXP, SEXP key0vecSEXP, SEXP eta0vecSEXP, SEXP alphavecSEXP, SEXP muvecSEXP, SEXP probvec_VSEXP, SEXP probvec_ZSEXP, SEXP probvec_QSEXP, SEXP probvec_FSEXP, SEXP P0SEXP, SEXP minimum_nSEXP, SEXP Jss1SEXP, SEXP Js1sSEXP, SEXP SmaxSEXP, SEXP n_iteSEXP, SEXP burn_inSEXP, SEXP thinningSEXP, SEXP n_particleSEXP, SEXP particle_index_vecSEXP, SEXP V_last_completeSEXP, SEXP B_lastSEXP, SEXP container_BSEXP, SEXP container_VSEXP, SEXP container_ZSEXP, SEXP container_QSEXP, SEXP container_FSEXP, SEXP SvecSEXP, SEXP weight_vecSEXP, SEXP empty_segSEXP) {
 BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const NumericVector& >::type T_seg(T_segSEXP);
     Rcpp::traits::input_parameter< const IntegerVector& >::type Y_seg(Y_segSEXP);
@@ -24,7 +23,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const int& >::type W(WSEXP);
     Rcpp::traits::input_parameter< const double& >::type start_point(start_pointSEXP);
     Rcpp::traits::input_parameter< const double& >::type end_point(end_pointSEXP);
-    Rcpp::traits::input_parameter< double& >::type t_star(t_starSEXP);
+    Rcpp::traits::input_parameter< const double& >::type t_star(t_starSEXP);
     Rcpp::traits::input_parameter< const int& >::type num_logs(num_logsSEXP);
     Rcpp::traits::input_parameter< const NumericMatrix& >::type lambdamat(lambdamatSEXP);
     Rcpp::traits::input_parameter< const NumericVector& >::type keyvec(keyvecSEXP);
@@ -56,8 +55,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< List& >::type container_F(container_FSEXP);
     Rcpp::traits::input_parameter< IntegerVector& >::type Svec(SvecSEXP);
     Rcpp::traits::input_parameter< NumericVector& >::type weight_vec(weight_vecSEXP);
-    rcpp_result_gen = Rcpp::wrap(RJMCMC_SMC(T_seg, Y_seg, U, K, W, start_point, end_point, t_star, num_logs, lambdamat, keyvec, etavec, key0vec, eta0vec, alphavec, muvec, probvec_V, probvec_Z, probvec_Q, probvec_F, P0, minimum_n, Jss1, Js1s, Smax, n_ite, burn_in, thinning, n_particle, particle_index_vec, V_last_complete, B_last, container_B, container_V, container_Z, container_Q, container_F, Svec, weight_vec));
-    return rcpp_result_gen;
+    Rcpp::traits::input_parameter< const bool& >::type empty_seg(empty_segSEXP);
+    RJMCMC_SMC(T_seg, Y_seg, U, K, W, start_point, end_point, t_star, num_logs, lambdamat, keyvec, etavec, key0vec, eta0vec, alphavec, muvec, probvec_V, probvec_Z, probvec_Q, probvec_F, P0, minimum_n, Jss1, Js1s, Smax, n_ite, burn_in, thinning, n_particle, particle_index_vec, V_last_complete, B_last, container_B, container_V, container_Z, container_Q, container_F, Svec, weight_vec, empty_seg);
+    return R_NilValue;
 END_RCPP
 }
 // SMC_turcotte_cpp
@@ -282,19 +282,19 @@ BEGIN_RCPP
 END_RCPP
 }
 // initial_breakpoints
-NumericVector initial_breakpoints(const NumericVector& T_seg, const double& t_star, const double& start_point, const double& end_point, const int& minimum_n, const double& max_range, const double& min_seg_length);
-RcppExport SEXP _RJSMC_initial_breakpoints(SEXP T_segSEXP, SEXP t_starSEXP, SEXP start_pointSEXP, SEXP end_pointSEXP, SEXP minimum_nSEXP, SEXP max_rangeSEXP, SEXP min_seg_lengthSEXP) {
+NumericVector initial_breakpoints(const NumericVector& T_seg_orig, const double& t_star, const double& start_point, const double& end_point, const int& minimum_n, const double& max_range, const double& min_seg_length);
+RcppExport SEXP _RJSMC_initial_breakpoints(SEXP T_seg_origSEXP, SEXP t_starSEXP, SEXP start_pointSEXP, SEXP end_pointSEXP, SEXP minimum_nSEXP, SEXP max_rangeSEXP, SEXP min_seg_lengthSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const NumericVector& >::type T_seg(T_segSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type T_seg_orig(T_seg_origSEXP);
     Rcpp::traits::input_parameter< const double& >::type t_star(t_starSEXP);
     Rcpp::traits::input_parameter< const double& >::type start_point(start_pointSEXP);
     Rcpp::traits::input_parameter< const double& >::type end_point(end_pointSEXP);
     Rcpp::traits::input_parameter< const int& >::type minimum_n(minimum_nSEXP);
     Rcpp::traits::input_parameter< const double& >::type max_range(max_rangeSEXP);
     Rcpp::traits::input_parameter< const double& >::type min_seg_length(min_seg_lengthSEXP);
-    rcpp_result_gen = Rcpp::wrap(initial_breakpoints(T_seg, t_star, start_point, end_point, minimum_n, max_range, min_seg_length));
+    rcpp_result_gen = Rcpp::wrap(initial_breakpoints(T_seg_orig, t_star, start_point, end_point, minimum_n, max_range, min_seg_length));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -423,6 +423,26 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// resampling_func
+List resampling_func(const NumericVector& weight_vec, const List& container_B, const List& container_V, const List& container_Z, const List& container_Q, const List& container_F, const IntegerVector& Svec, const IntegerVector& V_last_complete, const NumericVector& B_last, int n_particle);
+RcppExport SEXP _RJSMC_resampling_func(SEXP weight_vecSEXP, SEXP container_BSEXP, SEXP container_VSEXP, SEXP container_ZSEXP, SEXP container_QSEXP, SEXP container_FSEXP, SEXP SvecSEXP, SEXP V_last_completeSEXP, SEXP B_lastSEXP, SEXP n_particleSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericVector& >::type weight_vec(weight_vecSEXP);
+    Rcpp::traits::input_parameter< const List& >::type container_B(container_BSEXP);
+    Rcpp::traits::input_parameter< const List& >::type container_V(container_VSEXP);
+    Rcpp::traits::input_parameter< const List& >::type container_Z(container_ZSEXP);
+    Rcpp::traits::input_parameter< const List& >::type container_Q(container_QSEXP);
+    Rcpp::traits::input_parameter< const List& >::type container_F(container_FSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type Svec(SvecSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type V_last_complete(V_last_completeSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type B_last(B_lastSEXP);
+    Rcpp::traits::input_parameter< int >::type n_particle(n_particleSEXP);
+    rcpp_result_gen = Rcpp::wrap(resampling_func(weight_vec, container_B, container_V, container_Z, container_Q, container_F, Svec, V_last_complete, B_last, n_particle));
+    return rcpp_result_gen;
+END_RCPP
+}
 // segment_box
 List segment_box(const NumericVector& T_seg, const IntegerVector& Y_seg, const int& V, const int& Z, const int& Q, const int& F, const int& U, const int& K, const int& W, const double& LB, const double& UB, const int& num_logs, const NumericMatrix& lambdamat, const NumericVector& keyvec, const NumericVector& etavec, const NumericVector& key0vec, const NumericVector& eta0vec, const NumericVector& alphavec, const NumericVector& muvec, const NumericVector& probvec_V, const NumericVector& probvec_Z, const NumericVector& probvec_Q, const NumericVector& probvec_F, const int& V_left, const double& P0, const int& minimum_n, const bool open_segment, const double& end_point, const bool sample_state);
 RcppExport SEXP _RJSMC_segment_box(SEXP T_segSEXP, SEXP Y_segSEXP, SEXP VSEXP, SEXP ZSEXP, SEXP QSEXP, SEXP FSEXP, SEXP USEXP, SEXP KSEXP, SEXP WSEXP, SEXP LBSEXP, SEXP UBSEXP, SEXP num_logsSEXP, SEXP lambdamatSEXP, SEXP keyvecSEXP, SEXP etavecSEXP, SEXP key0vecSEXP, SEXP eta0vecSEXP, SEXP alphavecSEXP, SEXP muvecSEXP, SEXP probvec_VSEXP, SEXP probvec_ZSEXP, SEXP probvec_QSEXP, SEXP probvec_FSEXP, SEXP V_leftSEXP, SEXP P0SEXP, SEXP minimum_nSEXP, SEXP open_segmentSEXP, SEXP end_pointSEXP, SEXP sample_stateSEXP) {
@@ -525,6 +545,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// saveRObject
+void saveRObject(SEXP rObject, std::string filename);
+RcppExport SEXP _RJSMC_saveRObject(SEXP rObjectSEXP, SEXP filenameSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type rObject(rObjectSEXP);
+    Rcpp::traits::input_parameter< std::string >::type filename(filenameSEXP);
+    saveRObject(rObject, filename);
+    return R_NilValue;
+END_RCPP
+}
 // augment_vecZQFV
 void augment_vecZQFV(IntegerVector& vec, const int left_value, const int right_value, const int IN, const int S);
 RcppExport SEXP _RJSMC_augment_vecZQFV(SEXP vecSEXP, SEXP left_valueSEXP, SEXP right_valueSEXP, SEXP INSEXP, SEXP SSEXP) {
@@ -604,9 +635,34 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// weigths_correction
+double weigths_correction(const NumericVector& T_seg, const List& break_sample_output, const int& M, const int& K, const NumericVector& keyvec, const NumericVector& etavec, const NumericVector& key0vec, const NumericVector& eta0vec, const NumericVector& probvec_Z, const NumericVector& probvec_F, const NumericVector& probvec_Q, const NumericVector& alphavec, const NumericVector& muvec, const int& W, const double& P0);
+RcppExport SEXP _RJSMC_weigths_correction(SEXP T_segSEXP, SEXP break_sample_outputSEXP, SEXP MSEXP, SEXP KSEXP, SEXP keyvecSEXP, SEXP etavecSEXP, SEXP key0vecSEXP, SEXP eta0vecSEXP, SEXP probvec_ZSEXP, SEXP probvec_FSEXP, SEXP probvec_QSEXP, SEXP alphavecSEXP, SEXP muvecSEXP, SEXP WSEXP, SEXP P0SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericVector& >::type T_seg(T_segSEXP);
+    Rcpp::traits::input_parameter< const List& >::type break_sample_output(break_sample_outputSEXP);
+    Rcpp::traits::input_parameter< const int& >::type M(MSEXP);
+    Rcpp::traits::input_parameter< const int& >::type K(KSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type keyvec(keyvecSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type etavec(etavecSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type key0vec(key0vecSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type eta0vec(eta0vecSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type probvec_Z(probvec_ZSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type probvec_F(probvec_FSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type probvec_Q(probvec_QSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type alphavec(alphavecSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type muvec(muvecSEXP);
+    Rcpp::traits::input_parameter< const int& >::type W(WSEXP);
+    Rcpp::traits::input_parameter< const double& >::type P0(P0SEXP);
+    rcpp_result_gen = Rcpp::wrap(weigths_correction(T_seg, break_sample_output, M, K, keyvec, etavec, key0vec, eta0vec, probvec_Z, probvec_F, probvec_Q, alphavec, muvec, W, P0));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_RJSMC_RJMCMC_SMC", (DL_FUNC) &_RJSMC_RJMCMC_SMC, 39},
+    {"_RJSMC_RJMCMC_SMC", (DL_FUNC) &_RJSMC_RJMCMC_SMC, 40},
     {"_RJSMC_SMC_turcotte_cpp", (DL_FUNC) &_RJSMC_SMC_turcotte_cpp, 27},
     {"_RJSMC_SMC_waste_free_cpp", (DL_FUNC) &_RJSMC_SMC_waste_free_cpp, 28},
     {"_RJSMC_collapsed_full_conditional_Q", (DL_FUNC) &_RJSMC_collapsed_full_conditional_Q, 12},
@@ -621,16 +677,19 @@ static const R_CallMethodDef CallEntries[] = {
     {"_RJSMC_iteration0_RJMCMC", (DL_FUNC) &_RJSMC_iteration0_RJMCMC, 25},
     {"_RJSMC_prob_approx", (DL_FUNC) &_RJSMC_prob_approx, 8},
     {"_RJSMC_posterior_evaluation", (DL_FUNC) &_RJSMC_posterior_evaluation, 29},
+    {"_RJSMC_resampling_func", (DL_FUNC) &_RJSMC_resampling_func, 10},
     {"_RJSMC_segment_box", (DL_FUNC) &_RJSMC_segment_box, 29},
     {"_RJSMC_shift_function", (DL_FUNC) &_RJSMC_shift_function, 29},
     {"_RJSMC_make_table", (DL_FUNC) &_RJSMC_make_table, 3},
     {"_RJSMC_cpp_findInterval", (DL_FUNC) &_RJSMC_cpp_findInterval, 2},
+    {"_RJSMC_saveRObject", (DL_FUNC) &_RJSMC_saveRObject, 2},
     {"_RJSMC_augment_vecZQFV", (DL_FUNC) &_RJSMC_augment_vecZQFV, 5},
     {"_RJSMC_augment_vecM", (DL_FUNC) &_RJSMC_augment_vecM, 5},
     {"_RJSMC_reduce_vecZQFV", (DL_FUNC) &_RJSMC_reduce_vecZQFV, 4},
     {"_RJSMC_reduce_vecM", (DL_FUNC) &_RJSMC_reduce_vecM, 4},
     {"_RJSMC_augment_Bvec", (DL_FUNC) &_RJSMC_augment_Bvec, 4},
     {"_RJSMC_reduce_Bvec", (DL_FUNC) &_RJSMC_reduce_Bvec, 3},
+    {"_RJSMC_weigths_correction", (DL_FUNC) &_RJSMC_weigths_correction, 15},
     {NULL, NULL, 0}
 };
 
