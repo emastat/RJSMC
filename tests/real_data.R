@@ -1,4 +1,4 @@
-library(RJSMC)
+#library(RJSMC)
 library(mclust)
 library(fitdistrplus)
 
@@ -9,8 +9,8 @@ set.seed(22)
 
 # Prepare time series data
 ts_data <- list()
-ts_data$Yvec <- real_data$Yvec[1:1000]
-ts_data$Tvec <- real_data$Tvec[1:1000]
+ts_data$Yvec <- real_data$Yvec[1000:1200]
+ts_data$Tvec <- real_data$Tvec[1000:1200]
 
 # Prepare parameters from real_data
 parameters <- list()
@@ -43,20 +43,13 @@ settings$n_ite <- 20000
 settings$burn_in <- 5000
 settings$thinning <- 5
 settings$method <- "turcotte"
-settings$recycled_particles <- 4
-
-# Run SMC end-to-end
-cat("Starting SMC computation...\n")
-cat("Data points:", length(ts_data$Yvec), "\n")
-cat("Number of particles:", settings$n_particle, "\n")
-cat("Update interval length:", settings$length_UI, "\n")
-cat("Number of iterations:", settings$n_ite, "\n")
-cat("\n")
 
 out_SMC <- RJSMC::SMC(ts_data = ts_data,
                       parameters = parameters,
                       settings = settings)
 
 # Plot results
-#plot(out_SMC, truth = NULL)
+plot(out_SMC, observations=list(Tvec=ts_data$Tvec),time_to_date=TRUE)
 
+
+plot(out_SMC, observations=list(Tvec=ts_data$Tvec),time_to_date=TRUE)

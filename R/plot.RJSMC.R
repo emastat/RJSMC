@@ -10,11 +10,11 @@
 #' @export
 
 plot.RJSMC = function(obj,
-                      origin=as.Date("2022-01-01"),
-                      pl="V",
-                      truth=list(B=Bvec,cl=Vvec),clnames=NULL,
-                      observations=NULL,
-                      time_to_date=TRUE)
+                     origin=as.Date("2022-01-01"),
+                     pl="V",
+                     truth=NULL,clnames=NULL,
+                     observations=NULL,
+                     time_to_date=TRUE)
 {
  post_V = obj@posteriors_container_V
  post_Z = obj@posteriors_container_Z

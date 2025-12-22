@@ -17,7 +17,6 @@ Zvec <- english_words$Zvec
 Qvec <- english_words$Qvec
 Fvec <- english_words$Fvec
 
-obs_to_take = english_words$Tvec>0 & english_words$Tvec<5
 Tvec <- english_words$Tvec
 Yvec <- english_words$Yvec
 
@@ -64,13 +63,5 @@ out_SMC <- RJSMC::SMC(ts_data = ts_data,
 ## plot with observations
 plot(out_SMC, 
      truth=list(B=english_words$Bvec, cl=english_words$Vvec),
-     observations=list(Tvec=Tvec),time_to_date=FALSE)
+     observations=list(Tvec=Tvec),time_to_date=TRUE)
 
-plot(out_SMC, 
-     truth=list(B=english_words$Bvec, cl=english_words$Vvec),
-     observations=list(Tvec=english_words$Tvec[3000:3100]))
-
-
-
-## DEUBUG
-english_words$Bvec[(english_words$Bvec>33) & (english_words$Bvec<37)]
