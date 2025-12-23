@@ -51,8 +51,12 @@ plot.RJSMC = function(obj,
  ncl = max(which(dN>0))-1
  df = df[,1:(ncl+2)]
 
- # Got problems when Prob=1, scale it by factor 0.99999
- df[,-1] = df[,-1]*0.99999
+ # Normalize each row to sum to 1 to ensure probabilities are valid
+ # This handles any numerical issues where rows might not sum exactly to 1
+ row_sums = rowSums(df[,-1])
+ # Avoid division by zero (shouldn't happen, but safety check)
+ row_sums[row_sums == 0] = 1
+ df[,-1] = df[,-1] / row_sums
 
  g.gath =  tidyr::gather(df,Class, Probabilities,names(df)[-1])
  g.gath <<- g.gath

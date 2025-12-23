@@ -65,3 +65,8 @@ plot(out_SMC,
      truth=list(B=english_words$Bvec, cl=english_words$Vvec),
      observations=list(Tvec=Tvec),time_to_date=TRUE)
 
+
+plot(out_SMC, 
+     truth=list(B=english_words$Bvec, cl=english_words$Zvec),
+     observations=list(Tvec=Tvec),time_to_date=TRUE, pl="Z")     
+

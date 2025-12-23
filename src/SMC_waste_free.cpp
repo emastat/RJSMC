@@ -332,9 +332,17 @@ List SMC_waste_free_cpp( const IntegerVector& Yvec,
 
       double sum_weight = sum(weight_vec) ;
 
+      // Threshold for rounding very small negative values to 0 (numerical precision issue)
+      const double weight_threshold = 1e-10;
+
       for(int i=0; i<n_particle; i++){
 
         weight_vec[i] = weight_vec[i]  / sum_weight ;
+
+        // Round very small negative values to 0 (numerical precision error)
+        if(weight_vec[i] < 0.0 && weight_vec[i] > -weight_threshold){
+          weight_vec[i] = 0.0;
+        }
 
       }
 
