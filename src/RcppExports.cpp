@@ -172,6 +172,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// compute_posterior_breakpoint
+NumericVector compute_posterior_breakpoint(const int num_discr_intervals, const int num_particles, const NumericMatrix state_container_B, const NumericVector weight_vec);
+RcppExport SEXP _RJSMC_compute_posterior_breakpoint(SEXP num_discr_intervalsSEXP, SEXP num_particlesSEXP, SEXP state_container_BSEXP, SEXP weight_vecSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const int >::type num_discr_intervals(num_discr_intervalsSEXP);
+    Rcpp::traits::input_parameter< const int >::type num_particles(num_particlesSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix >::type state_container_B(state_container_BSEXP);
+    Rcpp::traits::input_parameter< const NumericVector >::type weight_vec(weight_vecSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_posterior_breakpoint(num_discr_intervals, num_particles, state_container_B, weight_vec));
+    return rcpp_result_gen;
+END_RCPP
+}
 // extract_index
 NumericVector extract_index(const NumericVector& x, const double& lower, const double& upper);
 RcppExport SEXP _RJSMC_extract_index(SEXP xSEXP, SEXP lowerSEXP, SEXP upperSEXP) {
@@ -667,6 +681,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_RJSMC_SMC_waste_free_cpp", (DL_FUNC) &_RJSMC_SMC_waste_free_cpp, 28},
     {"_RJSMC_collapsed_full_conditional_Q", (DL_FUNC) &_RJSMC_collapsed_full_conditional_Q, 12},
     {"_RJSMC_compute_posterior", (DL_FUNC) &_RJSMC_compute_posterior, 5},
+    {"_RJSMC_compute_posterior_breakpoint", (DL_FUNC) &_RJSMC_compute_posterior_breakpoint, 4},
     {"_RJSMC_extract_index", (DL_FUNC) &_RJSMC_extract_index, 3},
     {"_RJSMC_full_conditional_F", (DL_FUNC) &_RJSMC_full_conditional_F, 6},
     {"_RJSMC_full_conditional_V", (DL_FUNC) &_RJSMC_full_conditional_V, 14},

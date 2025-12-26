@@ -189,6 +189,7 @@ SMC = function( ts_data,
   posteriors_container_Z <- NULL
   posteriors_container_Q <- NULL
   posteriors_container_F <- NULL
+  posteriors_container_B <- NULL
   points_container <- NULL
   UI_index_vector <- NULL
 
@@ -245,9 +246,6 @@ SMC = function( ts_data,
                               2)
 
 
-    #stop("SMC --> check results_UI")
-
-
     temp_container_V <- compute_posterior(results_UI$num_discr_intervals,
                                           n_particle,
                                           results_UI$state_container_V,
@@ -272,6 +270,11 @@ SMC = function( ts_data,
                                             2+1,
                                             unlist(out_SMC_cpp$storage_weight[[non_empty_idx]]))
 
+    temp_container_B <- compute_posterior_breakpoint(results_UI$num_discr_intervals,
+                                                    n_particle,
+                                                    results_UI$state_container_B,
+                                                    unlist(out_SMC_cpp$storage_weight[[non_empty_idx]]))
+
 
 
 
@@ -283,6 +286,8 @@ SMC = function( ts_data,
     posteriors_container_Q <- rbind(posteriors_container_Q,temp_container_Q)
 
     posteriors_container_F <- rbind(posteriors_container_F,temp_container_F)
+
+    posteriors_container_B <- c(posteriors_container_B,temp_container_B)
 
 
     points_container <- c(points_container, results_UI$discr_points)
@@ -298,6 +303,7 @@ return(new("RJSMC",n_UI = n_UI,
             posteriors_container_Z = posteriors_container_Z,
             posteriors_container_Q = posteriors_container_Q,
             posteriors_container_F = posteriors_container_F,
+            posteriors_container_B = posteriors_container_B,
             UI_index_vector = UI_index_vector
             ))
 

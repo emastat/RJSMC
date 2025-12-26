@@ -8,15 +8,16 @@
   obj,
   origin = as.Date("2022-01-01"),
   pl = "V",
-  truth = list(B = Bvec, cl = Vvec),
+  truth = NULL,
   clnames = NULL,
-  observations = NULL
+  observations = NULL,
+  time_to_date = TRUE
 )
 }
 \arguments{
 \item{obj}{Object of class RJSMC, the output from RJSMC::SMC}
 
-\item{origin}{Starting date for data}
+\item{origin}{Starting date for data (used only when time_to_date=TRUE)}
 
 \item{pl}{Equal to V, Z, Q or F depending on which variable to pl}
 
@@ -25,6 +26,8 @@
 \item{clnames}{A vector giving names on the different classes. If NULL (default), classes are named 0,1,...}
 
 \item{observations}{A list containing 'Tvec' (time stamps of observations) and optionally 'Yvec' (message labels for coloring). If NULL (default), no observation dots are displayed.}
+
+\item{time_to_date}{Logical. If TRUE (default), converts time values to Date format for better visualization. If FALSE, displays time in its original numeric format (useful for debugging).}
 }
 \description{
 Plots an area plot over time with the areas corresponding to probabilities for the different discrete events. If 'truth' is available, also a piecewise horizontal line with levels equal to the state number is displayed within the same plot (with levels described on the right horizontal axis). If 'observations' is provided, dots for each observation are displayed above the truth rectangles.

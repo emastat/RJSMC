@@ -44,7 +44,7 @@ parameters$minimum_n <- english_words$minimum_n
 
 settings <- list()
 settings$num_logs <- english_words$num_logs
-settings$length_UI <- 1
+settings$length_UI <- 2
 settings$n_particle <- 5000
 settings$Jss1 <- 1/3
 settings$Js1s <- 1/3
@@ -65,6 +65,10 @@ plot(out_SMC,
      truth=list(B=english_words$Bvec, cl=english_words$Vvec),
      observations=list(Tvec=Tvec),time_to_date=TRUE)
 
+
+plot(out_SMC, 
+     truth=list(B=english_words$Bvec, cl=english_words$Vvec),
+     observations=list(Tvec=Tvec),time_to_date=TRUE, pl="B")
 
 plot(out_SMC, 
      truth=list(B=english_words$Bvec, cl=english_words$Zvec),

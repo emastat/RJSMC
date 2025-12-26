@@ -25,6 +25,8 @@ An S4 class to represent the output of the SMC function.
 \item list containing \code{n_UI} matrices: each matrix represent the marginal posterior distribution of the state variable \code{F}, evaluated at each discretization point (stored in \code{point_containers}), for each different Update interval A length-one numeric vector
 }}
 
+\item{\code{posteriors_container_B}}{numeric vector containing the marginal posterior probability that a breakpoint occurs at each discretization point (stored in \code{points_container}), concatenated across all Update Intervals}
+
 \item{\code{UI_index_vector}}{Index vector describing which interval each time points is evaluated within.}
 }}
 
