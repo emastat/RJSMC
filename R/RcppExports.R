@@ -233,6 +233,18 @@ compute_posterior <- function(num_discr_intervals, num_particles, state_containe
     .Call(`_RJSMC_compute_posterior`, num_discr_intervals, num_particles, state_container, num_states, weight_vec)
 }
 
+#'
+#' Function for computing the posterior distribution of breakpoint locations
+#' @param num_discr_intervals (int) number of discretization intervals
+#' @param num_particles (int) number of particles
+#' @param state_container_B (NumericMatrix) matrix indicating breakpoint presence: 1 if particle j has a breakpoint in interval i, 0 otherwise
+#' @param weight_vec (NumericVector) weights assigned to each particle (should sum to 1)
+#' @return NumericVector posterior probability that a breakpoint occurs in each discretization interval
+#' @export
+compute_posterior_breakpoint <- function(num_discr_intervals, num_particles, state_container_B, weight_vec) {
+    .Call(`_RJSMC_compute_posterior_breakpoint`, num_discr_intervals, num_particles, state_container_B, weight_vec)
+}
+
 #' @title extract_index
 #' Function for extracting the first and last index elements of an ordered vector
 #' sastisfying a constraint specified by a lower and upper bound

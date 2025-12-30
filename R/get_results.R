@@ -47,6 +47,7 @@ get_results <- function(start_point,
   state_container_Z <- matrix(0,num_discr_intervals, num_particles)
   state_container_Q <- matrix(0,num_discr_intervals, num_particles)
   state_container_F <- matrix(0,num_discr_intervals, num_particles)
+  state_container_B <- matrix(0,num_discr_intervals, num_particles)
 
 
   for(i in 1:num_particles){
@@ -72,6 +73,17 @@ get_results <- function(start_point,
     state_container_Q[,i] <- unlist(Q_state_list[i])[discr_point_segments]
     state_container_F[,i] <- unlist(F_state_list[i])[discr_point_segments]
 
+    # Check if breakpoints fall within each discretization interval
+    # For each discretization point, check if any breakpoint is in [discr_point, discr_point + interval_length)
+    breakpoints <- unlist(breakpoints_list[i])
+    for(j in 1:num_discr_intervals){
+      interval_start <- discr_points[j]
+      interval_end <- discr_points[j] + interval_length
+      # Check if any breakpoint falls within this interval [interval_start, interval_end)
+      if(any(breakpoints >= interval_start & breakpoints < interval_end)){
+        state_container_B[j, i] <- 1
+      }
+    }
 
   }
 
@@ -79,6 +91,7 @@ get_results <- function(start_point,
               state_container_Z = state_container_Z,
               state_container_Q = state_container_Q,
               state_container_F = state_container_F,
+              state_container_B = state_container_B,
               num_discr_intervals = num_discr_intervals,
               discr_points = discr_points))
 

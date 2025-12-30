@@ -1,4 +1,4 @@
-#library(RJSMC)
+devtools::load_all()
 library(mclust)
 library(fitdistrplus)
 
@@ -9,8 +9,8 @@ set.seed(22)
 
 # Prepare time series data
 ts_data <- list()
-ts_data$Yvec <- real_data$Yvec[1000:1200]
-ts_data$Tvec <- real_data$Tvec[1000:1200]
+ts_data$Yvec <- real_data$Yvec[real_data$Tvec>4250 & real_data$Tvec<4750]
+ts_data$Tvec <- real_data$Tvec[real_data$Tvec>4250 & real_data$Tvec<4750]
 
 # Prepare parameters from real_data
 parameters <- list()
@@ -49,7 +49,12 @@ out_SMC <- RJSMC::SMC(ts_data = ts_data,
                       settings = settings)
 
 # Plot results
-plot(out_SMC, observations=list(Tvec=ts_data$Tvec),time_to_date=TRUE)
+plot(out_SMC, observations=list(Tvec=ts_data$Tvec[ts_data$Tvec>4250 & ts_data$Tvec<4750]),time_to_date=FALSE)
+
+plot(out_SMC,
+observations=list(Tvec=ts_data$Tvec[ts_data$Tvec>4250 & ts_data$Tvec<4750]),
+time_to_date=FALSE,
+pl="Z")
 
 
 plot(out_SMC, observations=list(Tvec=ts_data$Tvec),time_to_date=TRUE)
