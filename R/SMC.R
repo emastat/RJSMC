@@ -304,6 +304,8 @@ return(new("RJSMC",n_UI = n_UI,
             posteriors_container_Q = posteriors_container_Q,
             posteriors_container_F = posteriors_container_F,
             posteriors_container_B = posteriors_container_B,
+            storage_B = out_SMC_cpp$storage_B,
+            storage_weight = out_SMC_cpp$storage_weight,
             UI_index_vector = UI_index_vector
             ))
 

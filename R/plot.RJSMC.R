@@ -10,8 +10,8 @@
 #' @export
 
 plot.RJSMC = function(obj,
-                     origin=as.Date("2022-01-01"),
-                     pl="V",
+                      origin=as.Date("2022-01-01"),
+                      pl="V",
                      truth=NULL,clnames=NULL,
                      observations=NULL,
                      time_to_date=TRUE)
@@ -65,9 +65,9 @@ plot.RJSMC = function(obj,
  } else
  {
    # For state variables (V, Z, Q, F), use area plots
-   dN = colMeans(df[,-1])
-   ncl = max(which(dN>0))-1
-   df = df[,1:(ncl+2)]
+ dN = colMeans(df[,-1])
+ ncl = max(which(dN>0))-1
+ df = df[,1:(ncl+2)]
 
    # Normalize each row to sum to 1 to ensure probabilities are valid
    # This handles any numerical issues where rows might not sum exactly to 1
@@ -76,13 +76,13 @@ plot.RJSMC = function(obj,
    row_sums[row_sums == 0] = 1
    df[,-1] = df[,-1] / row_sums
 
-   g.gath =  tidyr::gather(df,Class, Probabilities,names(df)[-1])
-   g.gath <<- g.gath
-   g = ggplot2::ggplot(data = g.gath,
-                       ggplot2::aes(x = date,
-                                    y = Probabilities,
-                                    fill = Class)
-                       ) + ggplot2::geom_area()
+ g.gath =  tidyr::gather(df,Class, Probabilities,names(df)[-1])
+ g.gath <<- g.gath
+ g = ggplot2::ggplot(data = g.gath,
+                     ggplot2::aes(x = date,
+                                  y = Probabilities,
+                                  fill = Class)
+                     ) + ggplot2::geom_area()
  }
  
  # Set x-axis label based on time format
@@ -133,31 +133,31 @@ plot.RJSMC = function(obj,
     } else {
       # For state variable plots, use rectangles as before
       # Get unique sorted time points from the plot data
-      dat = sort(unique(g.gath$date))
-      g2 = data.frame(date=dat)
-      n = nrow(g2)
+     dat = sort(unique(g.gath$date))
+     g2 = data.frame(date=dat)
+     n = nrow(g2)
       
       # Initialize Class column - will be assigned based on which segment each time point falls into
       g2$Class = rep(0, n)
       
       # Assign the true state class to each time point based on which segment it belongs to
       # Iterate backwards through segments to correctly assign classes
-      for(i in length(truth$B):1)
-      {
+     for(i in length(truth$B):1)
+     {
           # Assign truth$cl[i] to all time points that are before breakpoint d[i+1]
           # This means time points in segment i (from d[i] to d[i+1]) get class truth$cl[i]
           g2$Class[g2$date < d[i+1]] = truth$cl[i]
-      }
+     }
       
       # Convert Class to character for ggplot2
-      g2$Class = as.character(g2$Class)
+     g2$Class = as.character(g2$Class)
       
       # Create end time points for rectangles
       g2$dat2 = g2$date + rect_width
       
       # Debug assignments (can be removed in production)
-      g2 <<- g2
-      d <<- d
+     g2 <<- g2
+     d <<- d
       
       # Add rectangles to the plot showing true state sequence
       g = g + ggplot2::geom_rect(data=g2, 
