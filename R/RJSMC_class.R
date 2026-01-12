@@ -10,6 +10,7 @@
 #' @slot storage_B list containing breakpoints for each particle in each Update Interval (for evaluation purposes)
 #' @slot storage_weight list containing particle weights for each Update Interval (for evaluation purposes)
 #' @slot UI_index_vector Index vector describing which interval each time points is evaluated within.
+#' @slot UI_bounds Numeric vector containing the bounds of the Update Intervals.
 RJSMC <- setClass("RJSMC",
                     slots = list(n_UI = "integer",
                                  points_container="numeric",
@@ -20,5 +21,6 @@ RJSMC <- setClass("RJSMC",
                                  posteriors_container_B="numeric",
                                  storage_B="list",
                                  storage_weight="list",
-                                 UI_index_vector="integer")
+                                 UI_index_vector="integer",
+                                 UI_bounds="numeric")
 )

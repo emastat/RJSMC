@@ -133,7 +133,21 @@ using namespace Rcpp;
 
   // START SMC-RJMCMC
 
+  // Initialize progress bar
+  Function txtProgressBar("txtProgressBar");
+  Function setTxtProgressBar("setTxtProgressBar");
+  Function close("close");
+  List pb = txtProgressBar(Named("min") = 0, Named("max") = n_UI, Named("style") = 3, Named("width") = 50, Named("char") = "=");
+  
+  // Calculate update interval for progress bar (every 10%)
+  int progress_update_interval = std::max(1, n_UI / 10);
+
   for(int j=0; j<n_UI ; j++ ){
+    
+    // Update progress bar every 10% completion
+    if(j % progress_update_interval == 0 || j == n_UI - 1){
+      setTxtProgressBar(pb, j + 1);
+    }
 
     end_point = UI_bounds[j+1] ;
 
@@ -376,6 +390,9 @@ using namespace Rcpp;
 
     }
   }
+
+  // Close progress bar
+  close(pb);
 
   return ( List::create(Named("storage_B") = storage_B,
                         Named("storage_V") = storage_V,
