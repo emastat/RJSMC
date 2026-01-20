@@ -79,6 +79,8 @@ test = breakpoint_cx(
      out_SMC,
      true_Bvec=english_words$Bvec,
      Tvec=Tvec,
+     U=english_words$U,
      storage_weight=out_SMC@storage_weight,
-     UI_bounds=out_SMC@UI_bounds)
+     UI_bounds=out_SMC@UI_bounds,
+     Vvec=english_words$Vvec)
 
