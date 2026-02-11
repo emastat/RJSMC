@@ -44,7 +44,8 @@ parameters$minimum_n <- english_words$minimum_n
 
 settings <- list()
 settings$num_logs <- english_words$num_logs
-settings$length_UI <- 2
+#settings$length_UI <- 2
+settings$length_UI <- 0.5
 settings$n_particle <- 5000
 settings$Jss1 <- 1/3
 settings$Js1s <- 1/3

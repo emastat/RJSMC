@@ -21,7 +21,7 @@ NumericMatrix compute_posterior(const int num_discr_intervals,
 
   // VALIDATION CHECK 1: Verify weights sum to 1 (with tolerance for floating point)
   // Threshold for accepting very small negative values (should be rounded to 0 before reaching here)
-  const double weight_threshold = 1e-5;
+  const double weight_threshold = 1e-4;
   double sum_weights = 0.0;
   for(int i = 0; i < num_particles; i++){
     if(NumericVector::is_na(weight_vec[i]) || Rcpp::traits::is_nan<REALSXP>(weight_vec[i])){

@@ -467,8 +467,30 @@ breakpoint_cx <- function(obj,
       # Check for V=0 (empty segments) - should not happen
       empty_segments <- which(V_state_values == 0)
       if(length(empty_segments) > 0) {
-        stop(sprintf("breakpoint_cx: Observations fall into empty segments (V=0) for particle %d. Observations: %s",
-                     j, paste(empty_segments, collapse=", ")))
+        # Get the first problematic observation to identify the segment
+        first_empty <- empty_segments[1]
+        seg_idx <- segment_indices[first_empty]
+        
+        # Determine breakpoint_start and breakpoint_end for this segment
+        if(length(particle_bp) == 0) {
+          breakpoint_start <- -Inf
+          breakpoint_end <- Inf
+        } else if(seg_idx == 1) {
+          # First segment: before first breakpoint
+          breakpoint_start <- -Inf
+          breakpoint_end <- particle_bp[1]
+        } else if(seg_idx <= length(particle_bp)) {
+          # Middle segment: between breakpoints
+          breakpoint_start <- particle_bp[seg_idx - 1]
+          breakpoint_end <- particle_bp[seg_idx]
+        } else {
+          # Last segment: after last breakpoint
+          breakpoint_start <- particle_bp[length(particle_bp)]
+          breakpoint_end <- Inf
+        }
+        
+        stop(sprintf("breakpoint_cx: Observations fall into empty segments (V=0) for particle %d. Observations: %s. Problematic segment: [%.6f, %.6f) (segment index: %d)",
+                     j, paste(empty_segments, collapse=", "), breakpoint_start, breakpoint_end, seg_idx))
       }
       
       # Validate V state values
