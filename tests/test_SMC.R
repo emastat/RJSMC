@@ -55,6 +55,16 @@ settings$burn_in <- 20000
 settings$thinning <- 5
 settings$method <- "turcotte"
 
+#  Test breakpoint_cx
+test = breakpoint_cx(
+     out_SMC,
+     true_Bvec=english_words$Bvec,
+     Tvec=Tvec,
+     U=english_words$U,
+     storage_weight=out_SMC@storage_weight,
+     UI_bounds=out_SMC@UI_bounds,
+     Vvec=english_words$Vvec)
+
 #We need that (n_ite-burn_in)/thinning > n_particle
 
 out_SMC <- RJSMC::SMC(ts_data = ts_data,
