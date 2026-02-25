@@ -1,18 +1,18 @@
-# Official Simulation (FULL): SMC with different Update Interval lengths
+# Official Simulation (LIGHT): SMC with different Update Interval lengths
 #
-# This script runs the SMC algorithm 4 times with different length_UI values
-# (0.5, 1, 2, 5) and generates a markdown report.
+# Same design as official_simulation.R (4 runs with length_UI = 0.5, 1, 2, 5)
+# but with a lighter configuration for faster runs.
 #
-# Configuration (FULL):
-#   - 5000 particles
-#   - 50000 RJMCMC iterations
-#   - 20000 burn-in iterations
-#   - thinning = 5
+# Configuration (LIGHT):
+#   - 1000 particles (vs 5000 in full)
+#   - 10000 RJMCMC iterations (vs 50000 in full)
+#   - 4000 burn-in iterations (vs 20000 in full)
+#   - thinning = 5 (same as full)
 #
-# Report is written to: results_explanation/official_simulation.md
+# Report is written to: results_explanation/official_simulation_light.md
+# (Different from official_simulation.md so full and light reports do not overwrite each other.)
 #
-# Alternative: official_simulation_light.R uses fewer particles/iterations
-# and writes to official_simulation_light.md to avoid overwriting this report.
+# Full run: tests/official_simulation.R → official_simulation.md
 
 # Clear environment
 rm(list=ls())
@@ -57,15 +57,15 @@ parameters$probvec_F <- english_words$probvec_F
 parameters$P0 <- english_words$P0
 parameters$minimum_n <- english_words$minimum_n
 
-# Prepare base settings (length_UI will vary)
+# Prepare base settings (LIGHT: fewer particles and iterations; length_UI will vary)
 base_settings <- list()
 base_settings$num_logs <- english_words$num_logs
-base_settings$n_particle <- 5000
+base_settings$n_particle <- 1000
 base_settings$Jss1 <- 1/3
 base_settings$Js1s <- 1/3
 base_settings$Smax <- 150
-base_settings$n_ite <- 50000
-base_settings$burn_in <- 20000
+base_settings$n_ite <- 10000
+base_settings$burn_in <- 4000
 base_settings$thinning <- 5
 base_settings$method <- "turcotte"
 
@@ -77,7 +77,7 @@ n_runs <- length(length_UI_values)
 results_summary <- list()
 
 cat("========================================\n")
-cat("OFFICIAL SIMULATION: Starting runs\n")
+cat("OFFICIAL SIMULATION (LIGHT): Starting runs\n")
 cat("========================================\n\n")
 
 # Run simulation for each length_UI value
@@ -123,21 +123,11 @@ for(run_idx in 1:n_runs) {
     n_intervals = nrow(evaluation_results$intervals),
     n_observations = length(Tvec),
     
-    # Breakpoint confusion matrix (3x3: rows=true, cols=estimated)
-    # Rows: True_0, True_1, True_2
-    # Cols: Est_0, Est_1, Est_2
     breakpoint_confusion_matrix = evaluation_results$confusion_matrix,
-    
-    # V state confusion matrix (UxU: rows=true, cols=estimated)
-    # Rows: True_V_1, True_V_2, ..., True_V_U
-    # Cols: Est_V_1, Est_V_2, ..., Est_V_U
     V_state_confusion_matrix = evaluation_results$V_confusion_matrix,
-    
-    # Average error measures
     avg_error_breakpoints = evaluation_results$avg_error_breakpoints,
     avg_error_V_state = evaluation_results$avg_error_V_state,
     
-    # Additional summary statistics
     breakpoint_correct = sum(diag(evaluation_results$confusion_matrix)),
     breakpoint_total = sum(evaluation_results$confusion_matrix),
     breakpoint_accuracy = sum(diag(evaluation_results$confusion_matrix)) / sum(evaluation_results$confusion_matrix),
@@ -157,23 +147,17 @@ cat("========================================\n\n")
 # Generate markdown report
 cat("Generating markdown report...\n")
 
-# Determine the correct path for results_explanation directory
-# If running from package root, use "results_explanation"
-# If running from tests/, use "../results_explanation"
 if(dir.exists("tests")) {
-  # Running from package root
   results_dir <- "results_explanation"
 } else {
-  # Running from tests/ directory
   results_dir <- "../results_explanation"
 }
 
-# Create results_explanation directory if it doesn't exist
 if(!dir.exists(results_dir)) {
   dir.create(results_dir, recursive = TRUE)
 }
 
-# Function to build markdown report from results_summary (used for testing and production)
+# Function to build markdown report from results_summary (same as official_simulation.R)
 build_official_simulation_md <- function(results_summary, base_settings, n_obs, n_Bvec, U) {
   n_runs <- length(results_summary)
   md <- character(0)
@@ -247,7 +231,6 @@ build_official_simulation_md <- function(results_summary, base_settings, n_obs, 
   md[1]
 }
 
-# Generate markdown content
 md_content <- build_official_simulation_md(
   results_summary,
   base_settings,
@@ -256,10 +239,9 @@ md_content <- build_official_simulation_md(
   U = english_words$U
 )
 
-# Write markdown file (FULL run: do not overwrite with light run)
-md_file_path <- file.path(results_dir, "official_simulation.md")
+# Write markdown file (LIGHT run: separate file so it does not overwrite full report)
+md_file_path <- file.path(results_dir, "official_simulation_light.md")
 writeLines(md_content, md_file_path)
 
 cat(sprintf("Markdown report generated: %s\n", md_file_path))
-cat("\nSimulation completed successfully!\n")
-
+cat("\nSimulation (LIGHT) completed successfully!\n")

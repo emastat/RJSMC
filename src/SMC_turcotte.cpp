@@ -326,6 +326,17 @@ using namespace Rcpp;
 
       }
 
+      // Clamp any remaining negative weights to 0 and renormalize (so downstream always gets [0,1] sum to 1)
+      for(int i = 0; i < n_particle; i++){
+        if(weight_vec[i] < 0.0) weight_vec[i] = 0.0;
+      }
+      sum_weight = sum(weight_vec);
+      if(sum_weight <= 0.0){
+        stop("SMC_turcotte.cpp: sum of weights is <= 0 after clamping negatives. Cannot renormalize.");
+      }
+      for(int i = 0; i < n_particle; i++){
+        weight_vec[i] = weight_vec[i] / sum_weight;
+      }
 
       // List out_resampling= resampling_func(weight_vec,
       //                       container_B,
