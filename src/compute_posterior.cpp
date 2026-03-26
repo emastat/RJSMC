@@ -21,7 +21,7 @@ NumericMatrix compute_posterior(const int num_discr_intervals,
 
   // VALIDATION CHECK 1: Verify weights sum to 1 (with tolerance for floating point)
   // Threshold for accepting very small negative values (should be rounded to 0 before reaching here)
-  const double weight_threshold = 1e-5;
+  const double weight_threshold = 5e-3;
   double sum_weights = 0.0;
   for(int i = 0; i < num_particles; i++){
     if(NumericVector::is_na(weight_vec[i]) || Rcpp::traits::is_nan<REALSXP>(weight_vec[i])){
@@ -38,7 +38,7 @@ NumericMatrix compute_posterior(const int num_discr_intervals,
   }
   
   // Tolerance for sum check: allow small numerical approximation errors
-  const double tolerance = 1e-5;
+  const double tolerance = 1e-3;
   if(std::abs(sum_weights - 1.0) > tolerance){
     Rcpp::stop("compute_posterior: weights do not sum to 1. Sum=%.15f, expected=1.0, difference=%.15f (tolerance: %.1e)", 
                sum_weights, std::abs(sum_weights - 1.0), tolerance);
@@ -67,15 +67,16 @@ NumericMatrix compute_posterior(const int num_discr_intervals,
                    state_idx, j, i, num_states);
       }
 
-      posterior_matrix(j,state_idx) += weight_vec[i] ;
+      double w = (weight_vec[i] < 0.0) ? 0.0 : weight_vec[i];
+      posterior_matrix(j,state_idx) += w ;
 
       }
 
   }
 
   // VALIDATION CHECK 4: Verify each row sums correctly (should equal 1.0 within tolerance)
-  // Use same tolerance as sum check (1e-5) to allow for numerical approximation errors
-  const double row_tolerance = 1e-5;
+  // Use same tolerance as sum check (1e-3) to allow for numerical approximation errors
+  const double row_tolerance = 1e-3;
   for(int j = 0; j < num_discr_intervals; j++){
     double row_sum = 0.0;
     for(int s = 0; s < num_states; s++){

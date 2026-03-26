@@ -7,7 +7,12 @@
 #' @slot posteriors_container_Q list containing \code{n_UI} matrices: each matrix represent the marginal posterior distribution of the state variable \code{Q}, evaluated at each discretization point (stored in \code{point_containers}), for each different Update interval
 #' @slot posteriors_container_F - list containing \code{n_UI} matrices: each matrix represent the marginal posterior distribution of the state variable \code{F}, evaluated at each discretization point (stored in \code{point_containers}), for each different Update interval A length-one numeric vector
 #' @slot posteriors_container_B numeric vector containing the marginal posterior probability that a breakpoint occurs at each discretization point (stored in \code{points_container}), concatenated across all Update Intervals
+#' @slot storage_B list containing breakpoints for each particle in each Update Interval (for evaluation purposes)
+#' @slot storage_V list containing state variable \code{V} for each particle in each Update Interval (for evaluation purposes)
+#' @slot storage_weight list containing particle weights for each Update Interval (for evaluation purposes)
 #' @slot UI_index_vector Index vector describing which interval each time points is evaluated within.
+#' @slot UI_bounds Numeric vector containing the bounds of the Update Intervals.
+#' @slot elapsed_time Numeric scalar: time in seconds taken by the SMC C++ algorithm only (excludes post-processing).
 RJSMC <- setClass("RJSMC",
                     slots = list(n_UI = "integer",
                                  points_container="numeric",
@@ -16,5 +21,10 @@ RJSMC <- setClass("RJSMC",
                                  posteriors_container_Q="matrix",
                                  posteriors_container_F="matrix",
                                  posteriors_container_B="numeric",
-                                 UI_index_vector="integer")
+                                 storage_B="list",
+                                 storage_V="list",
+                                 storage_weight="list",
+                                 UI_index_vector="integer",
+                                 UI_bounds="numeric",
+                                 elapsed_time="numeric")
 )

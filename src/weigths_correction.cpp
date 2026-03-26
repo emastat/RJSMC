@@ -167,6 +167,11 @@ double weigths_correction(const NumericVector& T_seg,
     // subtract the importance sampling log density from the weight for sample m
     weight_m = weight_m - IS_log_density ;
 
+    // Cap weight_m to prevent overflow when exponentiating (similar to incremental_weight.cpp)
+    if(weight_m > 700.0) {
+      weight_m = 700.0;
+    }
+
     //update final weight 
     weight = weight_m +  std::exp(weight_m) ;
 

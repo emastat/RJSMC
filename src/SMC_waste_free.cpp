@@ -346,6 +346,18 @@ List SMC_waste_free_cpp( const IntegerVector& Yvec,
 
       }
 
+      // Clamp any remaining negative weights to 0 and renormalize (so downstream always gets [0,1] sum to 1)
+      for(int i = 0; i < n_particle; i++){
+        if(weight_vec[i] < 0.0) weight_vec[i] = 0.0;
+      }
+      sum_weight = sum(weight_vec);
+      if(sum_weight <= 0.0){
+        stop("SMC_waste_free.cpp: sum of weights is <= 0 after clamping negatives. Cannot renormalize.");
+      }
+      for(int i = 0; i < n_particle; i++){
+        weight_vec[i] = weight_vec[i] / sum_weight;
+      }
+
       //performe re-sampling (if needed)
 
       // // compute ESS value

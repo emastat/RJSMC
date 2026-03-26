@@ -105,6 +105,8 @@ SMC = function( ts_data,
   # (from first to last observed time-stamp of the dataset)
 
 
+  smc_start_time <- proc.time()["elapsed"]
+
   if(method == "turcotte"){
 
     out_SMC_cpp <- SMC_turcotte_cpp(Yvec,
@@ -167,6 +169,8 @@ SMC = function( ts_data,
 
   }
 
+
+  elapsed_time <- as.numeric(proc.time()["elapsed"] - smc_start_time)
 
   print( "SMC completed: extracting results")
 
@@ -304,7 +308,12 @@ return(new("RJSMC",n_UI = n_UI,
             posteriors_container_Q = posteriors_container_Q,
             posteriors_container_F = posteriors_container_F,
             posteriors_container_B = posteriors_container_B,
-            UI_index_vector = UI_index_vector
+            storage_B = out_SMC_cpp$storage_B,
+            storage_V = out_SMC_cpp$storage_V,
+            storage_weight = out_SMC_cpp$storage_weight,
+            UI_index_vector = UI_index_vector,
+            UI_bounds = UI_bounds,
+            elapsed_time = elapsed_time
             ))
 
 }

@@ -544,7 +544,7 @@ void     RJMCMC_SMC(const NumericVector& T_seg,
               // Update B_last: when S==1, Bvec[0] is t_star and Bvec[1] is the last breakpoint
               //B_last[index] = Bvec[1] ;
 
-              B_last[index] = end_point-0.001;
+              //B_last[index] = end_point-0.001;
             
             }
           

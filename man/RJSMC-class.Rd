@@ -27,6 +27,16 @@ An S4 class to represent the output of the SMC function.
 
 \item{\code{posteriors_container_B}}{numeric vector containing the marginal posterior probability that a breakpoint occurs at each discretization point (stored in \code{points_container}), concatenated across all Update Intervals}
 
+\item{\code{storage_B}}{list containing breakpoints for each particle in each Update Interval (for evaluation purposes)}
+
+\item{\code{storage_V}}{list containing state variable \code{V} for each particle in each Update Interval (for evaluation purposes)}
+
+\item{\code{storage_weight}}{list containing particle weights for each Update Interval (for evaluation purposes)}
+
 \item{\code{UI_index_vector}}{Index vector describing which interval each time points is evaluated within.}
+
+\item{\code{UI_bounds}}{Numeric vector containing the bounds of the Update Intervals.}
+
+\item{\code{elapsed_time}}{Numeric scalar: time in seconds taken by the SMC C++ algorithm only (excludes post-processing).}
 }}
 

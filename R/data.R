@@ -39,6 +39,26 @@
 #' }
 "english_words"
 
+#' English words low-rate dataset
+#'
+#' Same structure as \code{english_words} but with lower message rates
+#' (30 messages/hour and 1000 messages/hour instead of 60 and 2400).
+#' @format Same as \code{english_words}; a list with \code{Tvec}, \code{Yvec}, \code{Bvec}, \code{Vvec}, and all parameters.
+"english_words_low_rate"
+
+#' English words low-rate 08 dataset
+#'
+#' Same structure as \code{english_words} but with lower message rates 0.8 probability for the messages
+#' @format Same as \code{english_words}; a list with \code{Tvec}, \code{Yvec}, \code{Bvec}, \code{Vvec}, and all parameters.
+"english_words_low_rate_08"
+
+#' English words 08 dataset
+#'
+#' Same structure as \code{english_words} but 0.8 probability for the messages
+#' (30 messages/hour and 1000 messages/hour instead of 60 and 2400).
+#' @format Same as \code{english_words}; a list with \code{Tvec}, \code{Yvec}, \code{Bvec}, \code{Vvec}, and all parameters.
+"english_words_08"
+
 #' Real data dataset
 #'
 #' Real observational data from external source
