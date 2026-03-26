@@ -619,3 +619,629 @@ breakpoint_cx <- function(obj,
   
   return(result)
 }
+
+
+# ==============================================================================
+# Empirical posterior marginals (no ground truth) and JS comparison between runs
+# ==============================================================================
+
+#' @keywords internal
+.rjsmc_resolve_storage_weight <- function(obj, storage_weight) {
+  if (!is.null(storage_weight)) {
+    return(storage_weight)
+  }
+  if (!inherits(obj, "RJSMC")) {
+    stop("extract_empirical_posterior_marginals: obj must be an RJSMC object when storage_weight is NULL.")
+  }
+  obj@storage_weight
+}
+
+
+#' @keywords internal
+#' Particle-level breakpoint lists, weights, and V state lists (same rules as breakpoint_cx Steps 2--2b).
+.extract_particle_breakpoint_V_lists <- function(obj, storage_weight) {
+  storage_B <- obj@storage_B
+  non_empty_UI <- which(!vapply(storage_B, is.null, logical(1L)))
+  n_UI <- length(non_empty_UI)
+  if (n_UI == 0L) {
+    stop("extract_empirical_posterior_marginals: No non-empty Update Intervals in storage_B.")
+  }
+  n_particles <- length(storage_B[[non_empty_UI[1L]]])
+
+  particle_breakpoints_list <- vector("list", n_particles)
+  particle_breakpoints_weights_list <- vector("list", n_particles)
+  for (p in seq_len(n_particles)) {
+    particle_breakpoints_list[[p]] <- numeric(0)
+    particle_breakpoints_weights_list[[p]] <- numeric(0)
+  }
+
+  for (ui_idx in seq_len(n_UI)) {
+    ui_position <- non_empty_UI[ui_idx]
+    ui_breakpoints <- storage_B[[ui_position]]
+    is_first_UI <- (ui_idx == 1L)
+    is_last_UI <- (ui_idx == n_UI)
+
+    for (p in seq_len(n_particles)) {
+      particle_bp <- unlist(ui_breakpoints[p], use.names = FALSE)
+      if (length(particle_bp) == 0L) {
+        next
+      }
+      if (is_first_UI) {
+        extracted_bp <- if (length(particle_bp) > 1L) {
+          particle_bp[-length(particle_bp)]
+        } else {
+          particle_bp
+        }
+      } else if (is_last_UI) {
+        extracted_bp <- if (length(particle_bp) > 1L) {
+          particle_bp[-1L]
+        } else {
+          particle_bp
+        }
+      } else {
+        extracted_bp <- if (length(particle_bp) > 2L) {
+          particle_bp[-c(1L, length(particle_bp))]
+        } else {
+          numeric(0)
+        }
+      }
+      if (length(extracted_bp) > 0L) {
+        particle_breakpoints_list[[p]] <- c(particle_breakpoints_list[[p]], extracted_bp)
+        w_p <- unlist(storage_weight[[ui_position]], use.names = FALSE)[p]
+        particle_breakpoints_weights_list[[p]] <- c(
+          particle_breakpoints_weights_list[[p]],
+          rep(w_p, length(extracted_bp))
+        )
+      }
+    }
+  }
+
+  storage_V <- obj@storage_V
+  state_V_list <- vector("list", n_particles)
+  for (p in seq_len(n_particles)) {
+    state_V_list[[p]] <- numeric(0)
+  }
+
+  for (ui_idx in seq_len(n_UI)) {
+    ui_position <- non_empty_UI[ui_idx]
+    ui_V_states <- storage_V[[ui_position]]
+    is_last_UI <- (ui_idx == n_UI)
+
+    for (p in seq_len(n_particles)) {
+      particle_V <- unlist(ui_V_states[p], use.names = FALSE)
+      if (length(particle_V) == 0L) {
+        next
+      }
+      if (is_last_UI) {
+        extracted_V <- particle_V
+      } else {
+        extracted_V <- if (length(particle_V) > 1L) {
+          particle_V[-length(particle_V)]
+        } else {
+          numeric(0)
+        }
+      }
+      if (length(extracted_V) > 0L) {
+        state_V_list[[p]] <- c(state_V_list[[p]], extracted_V)
+      }
+    }
+  }
+
+  list(
+    particle_breakpoints_list = particle_breakpoints_list,
+    particle_breakpoints_weights_list = particle_breakpoints_weights_list,
+    state_V_list = state_V_list,
+    n_particles = n_particles,
+    non_empty_UI = non_empty_UI
+  )
+}
+
+
+#' @keywords internal
+#' Build evaluation intervals for breakpoint-count marginals.
+#' If \code{time_split_points} is non-NULL, uses \code{sort(unique(c(time_split_points, Tvec)))}
+#' (same grid for any pair of runs when split points are chosen externally, e.g. union of UI bounds).
+.build_evaluation_intervals <- function(Tvec,
+                                         interval_mode = c("with_ui_bounds", "observations_only", "union_ui_bounds"),
+                                         UI_bounds = NULL,
+                                         UI_bounds_b = NULL,
+                                         time_split_points = NULL) {
+  if (!is.null(time_split_points)) {
+    unique_timestamps <- sort(unique(c(as.numeric(time_split_points), as.numeric(Tvec))))
+  } else {
+    interval_mode <- match.arg(interval_mode)
+    if (interval_mode == "observations_only") {
+      unique_timestamps <- sort(unique(as.numeric(Tvec)))
+    } else if (interval_mode == "with_ui_bounds") {
+      if (is.null(UI_bounds) || length(UI_bounds) == 0L) {
+        stop("extract_empirical_posterior_marginals: interval_mode \"with_ui_bounds\" requires non-NULL UI_bounds.")
+      }
+      unique_timestamps <- sort(unique(c(as.numeric(UI_bounds), as.numeric(Tvec))))
+    } else {
+      if (is.null(UI_bounds) || is.null(UI_bounds_b)) {
+        stop("extract_empirical_posterior_marginals: interval_mode \"union_ui_bounds\" requires UI_bounds and UI_bounds_b, or pass time_split_points from compare_smc_runs_js().")
+      }
+      unique_timestamps <- sort(unique(c(
+        as.numeric(UI_bounds), as.numeric(UI_bounds_b), as.numeric(Tvec)
+      )))
+    }
+  }
+  n_intervals <- length(unique_timestamps) - 1L
+  if (n_intervals < 1L) {
+    stop("extract_empirical_posterior_marginals: Need at least two distinct time points to define intervals.")
+  }
+  data.frame(
+    start = unique_timestamps[seq_len(n_intervals)],
+    end = unique_timestamps[seq_len(n_intervals) + 1L],
+    stringsAsFactors = FALSE
+  )
+}
+
+
+#' @keywords internal
+#' Breakpoint count marginals P_0, P_1, P_2 per interval (breakpoint_cx Step 3 + validation).
+.compute_interval_breakpoint_count_probs <- function(intervals, particle_breakpoints_list,
+                                                     particle_breakpoints_weights_list, n_particles) {
+  n_intervals <- nrow(intervals)
+  intervals$P_0 <- 0.0
+  intervals$P_1 <- 0.0
+  intervals$P_2 <- 0.0
+
+  for (i in seq_len(n_intervals)) {
+    interval_start <- intervals$start[i]
+    interval_end <- intervals$end[i]
+    for (j in seq_len(n_particles)) {
+      particle_bp <- particle_breakpoints_list[[j]]
+      particle_weights <- particle_breakpoints_weights_list[[j]]
+      bp_in_interval <- (particle_bp >= interval_start) & (particle_bp < interval_end)
+      count <- sum(bp_in_interval)
+      if (count == 0L) {
+        next
+      }
+      if (count == 1L) {
+        bp_idx <- which(bp_in_interval)[1L]
+        intervals$P_1[i] <- intervals$P_1[i] + particle_weights[bp_idx]
+      } else if (count == 2L) {
+        bp_indices <- which(bp_in_interval)
+        intervals$P_2[i] <- intervals$P_2[i] + particle_weights[bp_indices[1L]]
+      } else {
+        stop(sprintf(
+          "extract_empirical_posterior_marginals: Particle %d has %d breakpoints in [%.6f, %.6f); max 2 allowed.",
+          j, count, interval_start, interval_end
+        ))
+      }
+    }
+  }
+  intervals$P_0 <- 1 - intervals$P_1 - intervals$P_2
+
+  tolerance <- 1e-5
+  for (i in seq_len(n_intervals)) {
+    P_0 <- intervals$P_0[i]
+    P_1 <- intervals$P_1[i]
+    P_2 <- intervals$P_2[i]
+    if (P_0 < 0 && abs(P_0) <= tolerance) {
+      intervals$P_0[i] <- 0.0
+      P_0 <- 0.0
+    }
+    if (P_1 < 0 && abs(P_1) <= tolerance) {
+      intervals$P_1[i] <- 0.0
+      P_1 <- 0.0
+    }
+    if (P_2 < 0 && abs(P_2) <= tolerance) {
+      intervals$P_2[i] <- 0.0
+      P_2 <- 0.0
+    }
+    if (P_0 > 1 && (P_0 - 1) <= tolerance) {
+      intervals$P_0[i] <- 1.0
+      P_0 <- 1.0
+    }
+    if (P_1 > 1 && (P_1 - 1) <= tolerance) {
+      intervals$P_1[i] <- 1.0
+      P_1 <- 1.0
+    }
+    if (P_2 > 1 && (P_2 - 1) <= tolerance) {
+      intervals$P_2[i] <- 1.0
+      P_2 <- 1.0
+    }
+    sum_probs <- P_0 + P_1 + P_2
+    if (P_0 < -tolerance || P_0 > 1 + tolerance) {
+      stop(sprintf("extract_empirical_posterior_marginals: Invalid P_0=%.10f for interval %d.", P_0, i))
+    }
+    if (P_1 < -tolerance || P_1 > 1 + tolerance) {
+      stop(sprintf("extract_empirical_posterior_marginals: Invalid P_1=%.10f for interval %d.", P_1, i))
+    }
+    if (P_2 < -tolerance || P_2 > 1 + tolerance) {
+      stop(sprintf("extract_empirical_posterior_marginals: Invalid P_2=%.10f for interval %d.", P_2, i))
+    }
+    if (sum_probs > 1 + tolerance) {
+      stop(sprintf(
+        "extract_empirical_posterior_marginals: Sum of probs %.10f > 1 for interval %d.",
+        sum_probs, i
+      ))
+    }
+  }
+  intervals
+}
+
+
+#' @keywords internal
+.compute_V_probability_matrix <- function(Tvec, U, n_particles, particle_breakpoints_list,
+                                          state_V_list, particle_breakpoints_weights_list) {
+  n_observations <- length(Tvec)
+  V_probability_matrix <- matrix(0, nrow = n_observations, ncol = 1L + U)
+  colnames(V_probability_matrix) <- c("timestamp", paste0("V_", seq_len(U)))
+  V_probability_matrix[, 1L] <- Tvec
+
+  for (j in seq_len(n_particles)) {
+    particle_bp <- particle_breakpoints_list[[j]]
+    particle_V <- state_V_list[[j]]
+    particle_weights <- particle_breakpoints_weights_list[[j]]
+
+    if (length(particle_bp) == 0L) {
+      segment_indices <- rep(1L, n_observations)
+    } else {
+      segment_indices <- findInterval(
+        Tvec, particle_bp,
+        rightmost.closed = FALSE, left.open = FALSE
+      )
+      segment_indices[segment_indices == 0L] <- 1L
+      segment_indices[segment_indices > length(particle_V)] <- length(particle_V)
+    }
+
+    invalid_segments <- which(segment_indices < 1L | segment_indices > length(particle_V))
+    if (length(invalid_segments) > 0L) {
+      stop(sprintf(
+        "extract_empirical_posterior_marginals: Invalid segment indices for particle %d.",
+        j
+      ))
+    }
+
+    V_state_values <- particle_V[segment_indices]
+    weight_values <- particle_weights[segment_indices]
+
+    empty_segments <- which(V_state_values == 0)
+    if (length(empty_segments) > 0L) {
+      stop(sprintf(
+        "extract_empirical_posterior_marginals: V=0 (empty segment) for particle %d at some observations.",
+        j
+      ))
+    }
+
+    invalid_V <- which(V_state_values < 1 | V_state_values > U | V_state_values != floor(V_state_values))
+    if (length(invalid_V) > 0L) {
+      stop(sprintf(
+        "extract_empirical_posterior_marginals: Invalid V state for particle %d.",
+        j
+      ))
+    }
+
+    for (v_state in seq_len(U)) {
+      obs_with_v <- which(V_state_values == v_state)
+      if (length(obs_with_v) > 0L) {
+        V_probability_matrix[obs_with_v, v_state + 1L] <-
+          V_probability_matrix[obs_with_v, v_state + 1L] + weight_values[obs_with_v]
+      }
+    }
+  }
+
+  tolerance <- 0.01
+  row_sums <- rowSums(V_probability_matrix[, seq_len(U) + 1L, drop = FALSE])
+  rows_to_normalize <- which(abs(row_sums - 1.0) > tolerance)
+  if (length(rows_to_normalize) > 0L) {
+    for (i in rows_to_normalize) {
+      if (row_sums[i] > 0) {
+        V_probability_matrix[i, seq_len(U) + 1L] <-
+          V_probability_matrix[i, seq_len(U) + 1L] / row_sums[i]
+      }
+    }
+  }
+  V_probability_matrix
+}
+
+
+#' @keywords internal
+#' Jensen--Shannon divergence D_JS(P, Q) using natural logarithm (\code{log} in R).
+#' M = (P+Q)/2; D_JS = 0.5 * KL(P||M) + 0.5 * KL(Q||M).
+.js_divergence_discrete <- function(p, q, eps = 1e-12) {
+  p <- as.numeric(p)
+  q <- as.numeric(q)
+  if (length(p) != length(q)) {
+    stop("js_divergence_discrete: p and q must have the same length.")
+  }
+  sp <- sum(p)
+  sq <- sum(q)
+  if (sp <= 0 || sq <= 0) {
+    return(NA_real_)
+  }
+  p <- p / sp
+  q <- q / sq
+  p <- pmax(p, eps)
+  q <- pmax(q, eps)
+  p <- p / sum(p)
+  q <- q / sum(q)
+  m <- 0.5 * (p + q)
+  kl_pm <- sum(p * (log(p) - log(m)))
+  kl_qm <- sum(q * (log(q) - log(m)))
+  0.5 * kl_pm + 0.5 * kl_qm
+}
+
+
+#' @keywords internal
+.summarize_js_vector <- function(x) {
+  x <- x[is.finite(x)]
+  if (length(x) == 0L) {
+    return(c(mean = NA_real_, median = NA_real_, q90 = NA_real_, n = 0L))
+  }
+  c(
+    mean = mean(x),
+    median = stats::median(x),
+    q90 = as.numeric(stats::quantile(x, probs = 0.90, names = FALSE)),
+    n = length(x)
+  )
+}
+
+
+#' Extract empirical marginal posteriors (breakpoint count and V) without ground truth
+#'
+#' Reuses the same particle aggregation and probability construction as
+#' \code{\link{breakpoint_cx}} (Steps 2--3 and Step 5b), but does not require true
+#' breakpoints or true V. Use this for real-data analyses and for comparing runs.
+#'
+#' @param obj An \code{RJSMC} object from \code{\link{SMC}}.
+#' @param Tvec Observation timestamps (must match the run used to build \code{obj}).
+#' @param UI_bounds For \code{interval_mode = "with_ui_bounds"}: boundaries as in \code{breakpoint_cx}.
+#'   For \code{"union_ui_bounds"}: first run's bounds (unless \code{time_split_points} is set).
+#'   Ignored when \code{time_split_points} is non-\code{NULL} or \code{interval_mode = "observations_only"}.
+#' @param U Number of V levels. If \code{NULL}, only breakpoint-count marginals are returned.
+#' @param storage_weight Optional; if \code{NULL}, \code{obj@storage_weight} is used.
+#' @param verbose If \code{TRUE}, print progress messages.
+#' @param interval_mode How to define evaluation intervals: \code{"with_ui_bounds"} uses
+#'   \code{sort(unique(c(UI_bounds, Tvec)))}; \code{"observations_only"} uses consecutive unique
+#'   observation times only; \code{"union_ui_bounds"} uses \code{UI_bounds} and \code{UI_bounds_b}
+#'   together with \code{Tvec}. Ignored if \code{time_split_points} is set.
+#' @param UI_bounds_b Second set of UI bounds (required for \code{union_ui_bounds} when
+#'   \code{time_split_points} is \code{NULL}).
+#' @param time_split_points If non-\code{NULL}, interval endpoints are
+#'   \code{sort(unique(c(time_split_points, Tvec)))}, forcing an identical grid across runs
+#'   (recommended when comparing different \code{length_UI}; see \code{\link{compare_smc_runs_js}}).
+#'
+#' @return A list with:
+#' \describe{
+#'   \item{intervals}{data.frame with \code{start}, \code{end}, \code{P_0}, \code{P_1}, \code{P_2}}
+#'   \item{V_probability_matrix}{matrix with columns \code{timestamp}, \code{V_1}, \ldots, \code{V_U}; \code{NULL} if \code{U} is \code{NULL}}
+#'   \item{n_intervals}{integer}
+#'   \item{n_observations}{integer (length of \code{Tvec})}
+#'   \item{n_particles}{integer}
+#' }
+#' @export
+extract_empirical_posterior_marginals <- function(obj, Tvec, UI_bounds = NULL, U = NULL,
+                                                  storage_weight = NULL, verbose = FALSE,
+                                                  interval_mode = c("with_ui_bounds", "observations_only", "union_ui_bounds"),
+                                                  UI_bounds_b = NULL,
+                                                  time_split_points = NULL) {
+  interval_mode <- match.arg(interval_mode)
+  storage_weight <- .rjsmc_resolve_storage_weight(obj, storage_weight)
+  if (verbose) {
+    message("Extracting particle breakpoint and V lists...")
+  }
+  pl <- .extract_particle_breakpoint_V_lists(obj, storage_weight)
+  n_particles <- pl$n_particles
+
+  if (verbose) {
+    message("Building intervals and breakpoint-count marginals...")
+  }
+  intervals <- .build_evaluation_intervals(
+    Tvec,
+    interval_mode = interval_mode,
+    UI_bounds = UI_bounds,
+    UI_bounds_b = UI_bounds_b,
+    time_split_points = time_split_points
+  )
+  intervals <- .compute_interval_breakpoint_count_probs(
+    intervals,
+    pl$particle_breakpoints_list,
+    pl$particle_breakpoints_weights_list,
+    n_particles
+  )
+  n_intervals <- nrow(intervals)
+
+  V_probability_matrix <- NULL
+  n_observations <- length(Tvec)
+  if (!is.null(U)) {
+    if (!is.numeric(U) || length(U) != 1L || U < 1L || U != floor(U)) {
+      stop("extract_empirical_posterior_marginals: U must be a single positive integer.")
+    }
+    U <- as.integer(U)
+    if (verbose) {
+      message("Computing V marginal probability matrix...")
+    }
+    V_probability_matrix <- .compute_V_probability_matrix(
+      Tvec, U, n_particles,
+      pl$particle_breakpoints_list,
+      pl$state_V_list,
+      pl$particle_breakpoints_weights_list
+    )
+  }
+
+  list(
+    intervals = intervals,
+    V_probability_matrix = V_probability_matrix,
+    n_intervals = n_intervals,
+    n_observations = n_observations,
+    n_particles = n_particles
+  )
+}
+
+
+#' Compare two SMC runs via Jensen--Shannon divergence of empirical marginals
+#'
+#' For each interval, compares the triple \code{(P_0, P_1, P_2)} for breakpoint
+#' counts. For each observation (if \code{U} is given), compares the V marginal
+#' vectors of length \code{U}. Returns per-interval and per-observation JS vectors,
+#' summary statistics (mean, median, 90th percentile), and optional publication-style plots.
+#'
+#' When the two runs use different \code{length_UI}, \code{UI_bounds} differ. Use
+#' \code{interval_mode = "union_ui_bounds"} (default): a **common** interval grid is built as
+#' \code{sort(unique(c(UI_bounds_run_a, UI_bounds_run_b, Tvec)))}, using \code{obj_a@UI_bounds}
+#' and \code{obj_b@UI_bounds} unless you override with \code{UI_bounds} / \code{UI_bounds_b}.
+#' Alternatively, \code{"observations_only"} uses only consecutive unique observation times;
+#' \code{"with_ui_bounds"} requires a single shared \code{UI_bounds} vector (original behaviour).
+#' You may also pass \code{time_split_points} explicitly for full control.
+#'
+#' @param obj_a,obj_b Two \code{RJSMC} objects (e.g. different \code{length_UI} or seeds).
+#' @param Tvec Observation timestamps (identical ordering for both runs).
+#' @param UI_bounds Optional override for run A's UI bounds when building the union grid;
+#'   if \code{NULL} under \code{union_ui_bounds}, \code{obj_a@UI_bounds} is used.
+#'   Required (non-\code{NULL}) for \code{interval_mode = "with_ui_bounds"}.
+#' @param U Number of V levels; if \code{NULL}, only breakpoint marginals are compared.
+#' @param interval_mode See \code{\link{extract_empirical_posterior_marginals}}. Default
+#'   \code{"union_ui_bounds"} supports comparing runs with different \code{length_UI}.
+#' @param UI_bounds_b Optional override for run B's bounds; if \code{NULL}, \code{obj_b@UI_bounds}
+#'   is used when \code{interval_mode = "union_ui_bounds"}.
+#' @param time_split_points If non-\code{NULL}, both runs use this grid (merged with \code{Tvec});
+#'   overrides automatic union construction.
+#' @param storage_weight_a,storage_weight_b Optional weight lists; default uses each object slot.
+#' @param plot If \code{TRUE}, build a ggplot object with histograms of JS values.
+#' @param plot_path If non-\code{NULL}, save the plot to this path (e.g. \code{".png"}).
+#' @param plot_width,plot_height Inches for \code{\link[ggplot2]{ggsave}} when \code{plot_path} is set.
+#' @param main_title Optional title for the figure.
+#'
+#' @return A list with:
+#' \describe{
+#'   \item{js_breakpoint_per_interval}{Numeric vector of length \code{n_intervals}.}
+#'   \item{js_V_per_observation}{\code{NULL} if \code{U} is \code{NULL}; else numeric vector of length \code{length(Tvec)}.}
+#'   \item{summary_breakpoint}{Named numeric: \code{mean}, \code{median}, \code{q90}, \code{n}.}
+#'   \item{summary_V}{Same structure, or \code{NULL} if no V comparison.}
+#'   \item{plot}{A \code{ggplot} object if \code{plot} is \code{TRUE}; else \code{NULL}.}
+#'   \item{comparison_grid}{\code{list(interval_mode, time_split_points_used)} describing the shared grid.}
+#' }
+#' @export
+compare_smc_runs_js <- function(obj_a, obj_b, Tvec, UI_bounds = NULL, U = NULL,
+                                interval_mode = c("union_ui_bounds", "observations_only", "with_ui_bounds"),
+                                UI_bounds_b = NULL,
+                                time_split_points = NULL,
+                                storage_weight_a = NULL, storage_weight_b = NULL,
+                                plot = TRUE, plot_path = NULL,
+                                plot_width = 7, plot_height = 4.5,
+                                main_title = NULL) {
+  interval_mode <- match.arg(interval_mode)
+
+  if (interval_mode == "with_ui_bounds" && is.null(UI_bounds)) {
+    stop("compare_smc_runs_js: interval_mode \"with_ui_bounds\" requires non-NULL UI_bounds (same grid for both runs).")
+  }
+
+  tsp <- time_split_points
+  if (is.null(tsp) && interval_mode == "union_ui_bounds") {
+    ua <- if (is.null(UI_bounds)) obj_a@UI_bounds else UI_bounds
+    ub <- if (is.null(UI_bounds_b)) {
+      if (is.null(UI_bounds)) obj_b@UI_bounds else UI_bounds
+    } else {
+      UI_bounds_b
+    }
+    tsp <- sort(unique(c(as.numeric(ua), as.numeric(ub), as.numeric(Tvec))))
+  }
+
+  ext_a <- extract_empirical_posterior_marginals(
+    obj_a, Tvec,
+    UI_bounds = UI_bounds, U = U, storage_weight = storage_weight_a,
+    interval_mode = interval_mode, UI_bounds_b = UI_bounds_b,
+    time_split_points = tsp, verbose = FALSE
+  )
+  ext_b <- extract_empirical_posterior_marginals(
+    obj_b, Tvec,
+    UI_bounds = UI_bounds, U = U, storage_weight = storage_weight_b,
+    interval_mode = interval_mode, UI_bounds_b = UI_bounds_b,
+    time_split_points = tsp, verbose = FALSE
+  )
+
+  if (ext_a$n_intervals != ext_b$n_intervals) {
+    stop("compare_smc_runs_js: Runs have different numbers of evaluation intervals.")
+  }
+  if (ext_a$n_observations != ext_b$n_observations) {
+    stop("compare_smc_runs_js: Tvec length differs between extractions (should not happen).")
+  }
+
+  ia <- ext_a$intervals
+  ib <- ext_b$intervals
+  if (any(ia$start != ib$start) || any(ia$end != ib$end)) {
+    stop("compare_smc_runs_js: Interval boundaries differ between extractions; report this as a bug.")
+  }
+
+  n_int <- ext_a$n_intervals
+  js_breakpoint_per_interval <- numeric(n_int)
+  for (i in seq_len(n_int)) {
+    pa <- c(ia$P_0[i], ia$P_1[i], ia$P_2[i])
+    pb <- c(ib$P_0[i], ib$P_1[i], ib$P_2[i])
+    js_breakpoint_per_interval[i] <- .js_divergence_discrete(pa, pb)
+  }
+  summary_breakpoint <- .summarize_js_vector(js_breakpoint_per_interval)
+
+  js_V_per_observation <- NULL
+  summary_V <- NULL
+  if (!is.null(U)) {
+    Ma <- ext_a$V_probability_matrix
+    Mb <- ext_b$V_probability_matrix
+    if (is.null(Ma) || is.null(Mb)) {
+      stop("compare_smc_runs_js: V_probability_matrix missing though U was set.")
+    }
+    n_obs <- ext_a$n_observations
+    js_V_per_observation <- numeric(n_obs)
+    for (i in seq_len(n_obs)) {
+      pa <- Ma[i, seq_len(U) + 1L, drop = TRUE]
+      pb <- Mb[i, seq_len(U) + 1L, drop = TRUE]
+      js_V_per_observation[i] <- .js_divergence_discrete(pa, pb)
+    }
+    summary_V <- .summarize_js_vector(js_V_per_observation)
+  }
+
+  plot_obj <- NULL
+  if (isTRUE(plot)) {
+    panels <- list()
+    df_bp <- data.frame(
+      panel = "Breakpoint count (per interval)",
+      js = js_breakpoint_per_interval
+    )
+    panels[[1L]] <- df_bp
+    if (!is.null(js_V_per_observation)) {
+      panels[[2L]] <- data.frame(
+        panel = "V state (per observation)",
+        js = js_V_per_observation
+      )
+    }
+    plot_df <- do.call(rbind, panels)
+    plot_df$panel <- factor(plot_df$panel, levels = unique(plot_df$panel))
+
+    plot_obj <- ggplot2::ggplot(plot_df, ggplot2::aes(x = js)) +
+      ggplot2::geom_histogram(bins = 40L, fill = "gray35", color = "white", linewidth = 0.2) +
+      ggplot2::facet_wrap(~panel, scales = "free", ncol = 1L) +
+      ggplot2::labs(
+        title = main_title,
+        x = "Jensen\u2013Shannon divergence (natural log)",
+        y = "Count"
+      ) +
+      ggplot2::theme_bw() +
+      ggplot2::theme(strip.text = ggplot2::element_text(face = "bold"))
+
+    if (!is.null(plot_path)) {
+      ggplot2::ggsave(
+        filename = plot_path,
+        plot = plot_obj,
+        width = plot_width,
+        height = plot_height,
+        dpi = 300
+      )
+    }
+  }
+
+  list(
+    js_breakpoint_per_interval = js_breakpoint_per_interval,
+    js_V_per_observation = js_V_per_observation,
+    summary_breakpoint = summary_breakpoint,
+    summary_V = summary_V,
+    plot = plot_obj,
+    comparison_grid = list(
+      interval_mode = interval_mode,
+      time_split_points_used = tsp
+    )
+  )
+}

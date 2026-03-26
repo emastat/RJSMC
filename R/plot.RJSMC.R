@@ -7,6 +7,7 @@
 #' @param clnames A vector giving names on the different classes. If NULL (default), classes are named 0,1,...
 #' @param observations A list containing 'Tvec' (time stamps of observations) and optionally 'Yvec' (message labels for coloring). If NULL (default), no observation dots are displayed.
 #' @param time_to_date Logical. If TRUE (default), converts time values to Date format for better visualization. If FALSE, displays time in its original numeric format (useful for debugging).
+#' @param title Optional character string; if non-NULL, displayed as the plot title (ggplot2 \code{labs(title = ...)}).
 #' @export
 
 plot.RJSMC = function(obj,
@@ -14,7 +15,8 @@ plot.RJSMC = function(obj,
                       pl="V",
                      truth=NULL,clnames=NULL,
                      observations=NULL,
-                     time_to_date=TRUE)
+                     time_to_date=TRUE,
+                     title=NULL)
 {
  post_V = obj@posteriors_container_V
  post_Z = obj@posteriors_container_Z
@@ -83,6 +85,9 @@ plot.RJSMC = function(obj,
                                   y = Probabilities,
                                   fill = Class)
                      ) + ggplot2::geom_area()
+ 
+   # Y-axis label for state-variable probability plots
+   g = g + ggplot2::ylab("Probability")
  }
  
  # Set x-axis label based on time format
@@ -159,10 +164,42 @@ plot.RJSMC = function(obj,
      g2 <<- g2
      d <<- d
       
-      # Add rectangles to the plot showing true state sequence
+      # Clear separator line between estimated states (y 0--1) and real V-state band
+      sep_y = 1.02
+      g = g + ggplot2::geom_hline(yintercept = sep_y, linewidth = 0.8, colour = "gray30", linetype = "solid")
+      
+      # Real V-state band: place rectangles in a dedicated band above the separator
+      truth_ymin = 1.05
+      truth_ymax = 1.18
       g = g + ggplot2::geom_rect(data=g2, 
-                                  ggplot2::aes(xmin=date, xmax=dat2, ymin=1.01, ymax=1.1, fill=Class),
+                                  ggplot2::aes(xmin=date, xmax=dat2, ymin=truth_ymin, ymax=truth_ymax, fill=Class),
                                   inherit.aes = FALSE)
+      
+      # Label the top band as "Real V-state" (legend-style at top)
+      g = g + ggplot2::annotate("text", x = Inf, y = (truth_ymin + truth_ymax) / 2,
+                                 label = "Real V-state", hjust = -0.08, vjust = 0.5,
+                                 size = 3.2, fontface = "bold")
+
+      # Add left-side label for the top band: "True State" (positioned where true states are displayed)
+      # Match style of the main y-axis title
+      # Place a large, clearly visible \"True State\" label near the left side,
+      # aligned vertically with the true-state band. We overshoot the size/offset
+      # now so it is definitely visible and can be fine-tuned later.
+      x_min <- min(g2$date)
+      x_range <- max(g2$date) - x_min
+      # Put label well inside the plotting area (10% of the x-range from the left)
+      x_pos <- x_min - 0.03 * x_range
+      g = g +
+        ggplot2::annotate(
+          "text",
+          x = x_pos,
+          y = (truth_ymin + truth_ymax) / 2,
+          label = "True State",
+          angle = 90,
+          hjust = 0.35,
+          vjust = 0.23,
+          size = 3.2,        # deliberately large for visibility
+        )
       
       # Update all_classes to include truth classes
       all_classes = sort(unique(c(all_classes, as.character(g2$Class))))
@@ -177,13 +214,13 @@ plot.RJSMC = function(obj,
    color_values = grDevices::rainbow(n_classes)
    names(color_values) = all_classes
 
-   # Set class "0" to white
+   # Set class "0" to very light gray (slightly brighter)
    if("0" %in% all_classes) {
-     color_values["0"] = "#ffa0a060"
+     color_values["0"] = "#F2F2F2"
    }
 
-   # Apply manual color scale
-   g = g + ggplot2::scale_fill_manual(values = color_values)
+   # Apply manual color scale; legend title is "V-State"
+   g = g + ggplot2::scale_fill_manual(values = color_values, name = "V-State")
  }
  
  # Add observation dots if observations are provided
@@ -196,8 +233,8 @@ plot.RJSMC = function(obj,
      obs_dates = observations$Tvec
    }
    
-   # Create data frame for observations
-   obs_df = data.frame(date = obs_dates)
+   # Create data frame for observations (include legend label for legend entry)
+   obs_df = data.frame(date = obs_dates, legend_obs = "Observations")
    
    if(pl == "B") {
      # For breakpoint plots, show observations at the top of the probability scale
@@ -216,42 +253,47 @@ plot.RJSMC = function(obj,
      } else
      {
        g = g + ggplot2::geom_point(data = obs_df,
-                                     ggplot2::aes(x = date, y = obs_y),
-                                     color = "black",
+                                     ggplot2::aes(x = date, y = obs_y, color = legend_obs),
                                      size = 0.5,
-                                     inherit.aes = FALSE)
+                                     inherit.aes = FALSE) +
+         ggplot2::scale_color_manual(values = c("Observations" = "black"), name = NULL)
      }
      # Adjust y-axis to show observations
      g = g + ggplot2::coord_cartesian(ylim = c(0, obs_y * 1.1))
    } else {
      # For state variable plots, use original positioning
      # If Yvec is provided, use it for coloring; otherwise use a single color
-     if(!is.null(observations$Yvec))
-     {
+    obs_y_state = 1.25  # above Real V-state band (1.05--1.18)
+    if(!is.null(observations$Yvec))
+    {
        obs_df$message = as.character(observations$Yvec)
-       # Add points colored by message type, positioned above truth rectangles
+       # Add points colored by message type, positioned above Real V-state band
        g = g + ggplot2::geom_point(data = obs_df,
-                                   ggplot2::aes(x = date, y = 1.15, color = message),
+                                   ggplot2::aes(x = date, y = obs_y_state, color = message),
                                    size = 0.5,
                                    inherit.aes = FALSE)
      } else
      {
-       # Add points with single color, positioned above truth rectangles
+       # Add points with single color (black), positioned above Real V-state band; show in legend
        g = g + ggplot2::geom_point(data = obs_df,
-                                     ggplot2::aes(x = date, y = 1.15),
-                                     color = "black",
+                                     ggplot2::aes(x = date, y = obs_y_state, color = legend_obs),
                                      size = 0.5,
-                                     inherit.aes = FALSE)
+                                     inherit.aes = FALSE) +
+         ggplot2::scale_color_manual(values = c("Observations" = "black"), name = NULL)
      }
      
-     # Extend y-axis to show observation dots (above truth rectangles at 1.1)
-     g = g + ggplot2::coord_cartesian(ylim = c(0, 1.2))
+     # Extend y-axis to show observation dots above the Real V-state band
+     g = g + ggplot2::coord_cartesian(ylim = c(0, 1.32))
    }
  } else if(!is.null(truth) && pl != "B")
  {
-   # If only truth is provided, extend y-axis slightly to show truth rectangles (only for state plots)
-   g = g + ggplot2::coord_cartesian(ylim = c(0, 1.15))
+   # If only truth is provided, extend y-axis to show separator and Real V-state band
+   g = g + ggplot2::coord_cartesian(ylim = c(0, 1.22))
  }
- 
+
+ if (!is.null(title)) {
+   g = g + ggplot2::labs(title = title)
+ }
+
  g
 }

@@ -24,14 +24,14 @@ library(mclust)
 library(fitdistrplus)
 
 # Load the "english_words" data
-Bvec <- english_words$Bvec
-Vvec <- english_words$Vvec
-Zvec <- english_words$Zvec
-Qvec <- english_words$Qvec
-Fvec <- english_words$Fvec
+Bvec <- english_words_08$Bvec
+Vvec <- english_words_08$Vvec
+Zvec <- english_words_08$Zvec
+Qvec <- english_words_08$Qvec
+Fvec <- english_words_08$Fvec
 
-Tvec <- english_words$Tvec
-Yvec <- english_words$Yvec
+Tvec <- english_words_08$Tvec
+Yvec <- english_words_08$Yvec
 
 # Prepare time series data
 ts_data <- list()
@@ -40,26 +40,26 @@ ts_data$Tvec <- Tvec
 
 # Prepare parameters (same for all runs)
 parameters <- list()
-parameters$U <- english_words$U
-parameters$W <- english_words$W
-parameters$K <- english_words$K
-parameters$lambdamat <- english_words$lambdamat
-parameters$keyvec <- english_words$keyvec
-parameters$etavec <- english_words$etavec
-parameters$key0vec <- english_words$key0vec
-parameters$eta0vec <- english_words$eta0vec
-parameters$alphavec <- english_words$alphavec
-parameters$muvec <- english_words$muvec
-parameters$probvec_V <- english_words$probvec_V
-parameters$probvec_Z <- english_words$probvec_Z
-parameters$probvec_Q <- english_words$probvec_Q
-parameters$probvec_F <- english_words$probvec_F
-parameters$P0 <- english_words$P0
-parameters$minimum_n <- english_words$minimum_n
+parameters$U <- english_words_08$U
+parameters$W <- english_words_08$W
+parameters$K <- english_words_08$K
+parameters$lambdamat <- english_words_08$lambdamat
+parameters$keyvec <- english_words_08$keyvec
+parameters$etavec <- english_words_08$etavec
+parameters$key0vec <- english_words_08$key0vec
+parameters$eta0vec <- english_words_08$eta0vec
+parameters$alphavec <- english_words_08$alphavec
+parameters$muvec <- english_words_08$muvec
+parameters$probvec_V <- english_words_08$probvec_V
+parameters$probvec_Z <- english_words_08$probvec_Z
+parameters$probvec_Q <- english_words_08$probvec_Q
+parameters$probvec_F <- english_words_08$probvec_F
+parameters$P0 <- english_words_08$P0
+parameters$minimum_n <- english_words_08$minimum_n
 
 # Prepare base settings (LIGHT: fewer particles and iterations; length_UI will vary)
 base_settings <- list()
-base_settings$num_logs <- english_words$num_logs
+base_settings$num_logs <- english_words_08$num_logs
 base_settings$Jss1 <- 1/3
 base_settings$Js1s <- 1/3
 base_settings$Smax <- 150
@@ -109,12 +109,12 @@ for(run_idx in 1:n_runs) {
   cat("  Running breakpoint_cx evaluation...\n")
   evaluation_results <- breakpoint_cx(
     obj = out_SMC,
-    true_Bvec = english_words$Bvec,
+    true_Bvec = english_words_08$Bvec,
     Tvec = Tvec,
-    U = english_words$U,
+    U = english_words_08$U,
     storage_weight = out_SMC@storage_weight,
     UI_bounds = out_SMC@UI_bounds,
-    Vvec = english_words$Vvec
+    Vvec = english_words_08$Vvec
   )
   
   # Store key results
@@ -239,12 +239,12 @@ md_content <- build_official_simulation_md(
   results_summary,
   base_settings,
   n_obs = length(Tvec),
-  n_Bvec = length(english_words$Bvec),
-  U = english_words$U
+  n_Bvec = length(english_words_08$Bvec),
+  U = english_words_08$U
 )
 
 # Write markdown file (LIGHT run: separate file so it does not overwrite full report)
-md_file_path <- file.path(results_dir, "official_simulation_light.md")
+md_file_path <- file.path(results_dir, "official_simulation_light_08.md")
 writeLines(md_content, md_file_path)
 
 cat(sprintf("Markdown report generated: %s\n", md_file_path))

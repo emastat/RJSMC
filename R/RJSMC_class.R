@@ -12,6 +12,7 @@
 #' @slot storage_weight list containing particle weights for each Update Interval (for evaluation purposes)
 #' @slot UI_index_vector Index vector describing which interval each time points is evaluated within.
 #' @slot UI_bounds Numeric vector containing the bounds of the Update Intervals.
+#' @slot elapsed_time Numeric scalar: time in seconds taken by the SMC C++ algorithm only (excludes post-processing).
 RJSMC <- setClass("RJSMC",
                     slots = list(n_UI = "integer",
                                  points_container="numeric",
@@ -24,5 +25,6 @@ RJSMC <- setClass("RJSMC",
                                  storage_V="list",
                                  storage_weight="list",
                                  UI_index_vector="integer",
-                                 UI_bounds="numeric")
+                                 UI_bounds="numeric",
+                                 elapsed_time="numeric")
 )

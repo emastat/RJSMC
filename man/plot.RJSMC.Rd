@@ -11,7 +11,8 @@
   truth = NULL,
   clnames = NULL,
   observations = NULL,
-  time_to_date = TRUE
+  time_to_date = TRUE,
+  title = NULL
 )
 }
 \arguments{
@@ -19,7 +20,7 @@
 
 \item{origin}{Starting date for data (used only when time_to_date=TRUE)}
 
-\item{pl}{Equal to V, Z, Q or F depending on which variable to pl}
+\item{pl}{Equal to V, Z, Q, F, or B depending on which variable to plot (B for breakpoints)}
 
 \item{truth}{A list containing 'V', a vector with true states within each segment and 'B', a vector containing the starting points for each segment}
 
@@ -28,6 +29,8 @@
 \item{observations}{A list containing 'Tvec' (time stamps of observations) and optionally 'Yvec' (message labels for coloring). If NULL (default), no observation dots are displayed.}
 
 \item{time_to_date}{Logical. If TRUE (default), converts time values to Date format for better visualization. If FALSE, displays time in its original numeric format (useful for debugging).}
+
+\item{title}{Optional character string; if non-NULL, displayed as the plot title (ggplot2 \code{labs(title = ...)}).}
 }
 \description{
 Plots an area plot over time with the areas corresponding to probabilities for the different discrete events. If 'truth' is available, also a piecewise horizontal line with levels equal to the state number is displayed within the same plot (with levels described on the right horizontal axis). If 'observations' is provided, dots for each observation are displayed above the truth rectangles.
