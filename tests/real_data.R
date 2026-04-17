@@ -46,9 +46,13 @@ settings$burn_in <- 4000
 settings$thinning <- 5
 settings$method <- "turcotte"
 
-out_SMC_2_5 <- RJSMC::SMC(ts_data = ts_data,
-                      parameters = parameters,
-                      settings = settings)
+out_cpp_2_5 <- RJSMC::SMC(ts_data = ts_data,
+                          parameters = parameters,
+                          settings = settings)
+out_SMC_2_5 <- RJSMC::smc_post_processing(out_cpp_2_5,
+                                          parameters = parameters,
+                                          settings = settings,
+                                          interval_length = 0.01)
 
 # Plot results
 
@@ -105,9 +109,13 @@ settings$burn_in <- 4000
 settings$thinning <- 5
 settings$method <- "turcotte"
 
-out_SMC_0_5 <- RJSMC::SMC(ts_data = ts_data,
-                      parameters = parameters,
-                      settings = settings)
+out_cpp_0_5 <- RJSMC::SMC(ts_data = ts_data,
+                          parameters = parameters,
+                          settings = settings)
+out_SMC_0_5 <- RJSMC::smc_post_processing(out_cpp_0_5,
+                                          parameters = parameters,
+                                          settings = settings,
+                                          interval_length = 0.01)
 
 # Plot results
 

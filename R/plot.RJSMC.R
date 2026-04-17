@@ -1,9 +1,9 @@
 #' @title plot.RJSMC:  Plotting results from RJSMC::SMC routine
-#' @description Plots an area plot over time with the areas corresponding to probabilities for the different discrete events. If 'truth' is available, also a piecewise horizontal line with levels equal to the state number is displayed within the same plot (with levels described on the right horizontal axis). If 'observations' is provided, dots for each observation are displayed above the truth rectangles.
+#' @description Plots an area plot over time with the areas corresponding to probabilities for the different discrete events. If 'truth' is available, the true discrete state is drawn as a piecewise-constant band: segment \code{k} has state \code{cl[k]} on \code{[B[k], B[k+1])}. If \code{length(cl) == length(B)}, an extra segment \code{[B[length(B)], x]} is added with \code{cl[length(B)]} and \code{x} the right edge of the plot (\code{max(points)}). Observation dots, if passed, are independent of this geometry. If 'observations' is provided, dots for each observation are displayed above the truth rectangles.
 #' @param obj Object of class RJSMC, the output from RJSMC::SMC
 #' @param origin Starting date for data (used only when time_to_date=TRUE)
 #' @param pl Equal to V, Z, Q, F, or B depending on which variable to plot (B for breakpoints)
-#' @param truth A list containing 'V', a vector with true states within each segment and 'B', a vector containing the starting points for each segment
+#' @param truth A list with \code{B} (segment start times / change-points) and \code{cl} (true state in each segment). Use \code{length(cl) == length(B) - 1} for segments \code{[B[k],B[k+1])}, or \code{length(cl) == length(B)} to include a final segment from the last \code{B} to the plot's right edge.
 #' @param clnames A vector giving names on the different classes. If NULL (default), classes are named 0,1,...
 #' @param observations A list containing 'Tvec' (time stamps of observations) and optionally 'Yvec' (message labels for coloring). If NULL (default), no observation dots are displayed.
 #' @param time_to_date Logical. If TRUE (default), converts time values to Date format for better visualization. If FALSE, displays time in its original numeric format (useful for debugging).
@@ -106,29 +106,8 @@ plot.RJSMC = function(obj,
  
  if(!is.null(truth))
  {
-    # Convert truth breakpoints based on time_to_date setting
-    if(time_to_date) {
-      # Convert to Date (same scale as df$date)
-      # truth$B contains numeric time values, convert to Date using origin
-      d = as.Date(truth$B, origin=origin)
-      # Add one day after the last breakpoint to define the final segment
-      d = c(d, tail(d,1) + 1)
-      # Rectangle width increment (one day)
-      rect_width = 1
-    } else {
-      # Keep original numeric time values
-      d = truth$B
-      # Add small increment after the last breakpoint (use 1% of time range or 0.1, whichever is larger)
-      time_range = max(points) - min(points)
-      increment = max(0.1, time_range * 0.01)
-      d = c(d, tail(d,1) + increment)
-      # Rectangle width increment (small time increment)
-      rect_width = increment
-    }
-    
     # For breakpoint plots, add vertical lines at true breakpoints
     if(pl == "B") {
-      # Add vertical lines at true breakpoint locations
       truth_breakpoints = if(time_to_date) as.Date(truth$B, origin=origin) else truth$B
       g = g + ggplot2::geom_vline(xintercept = truth_breakpoints, 
                                    linetype = "dashed", 
@@ -136,34 +115,40 @@ plot.RJSMC = function(obj,
                                    size = 1.0,
                                    alpha = 0.7)
     } else {
-      # For state variable plots, use rectangles as before
-      # Get unique sorted time points from the plot data
-     dat = sort(unique(g.gath$date))
-     g2 = data.frame(date=dat)
-     n = nrow(g2)
-      
-      # Initialize Class column - will be assigned based on which segment each time point falls into
-      g2$Class = rep(0, n)
-      
-      # Assign the true state class to each time point based on which segment it belongs to
-      # Iterate backwards through segments to correctly assign classes
-     for(i in length(truth$B):1)
-     {
-          # Assign truth$cl[i] to all time points that are before breakpoint d[i+1]
-          # This means time points in segment i (from d[i] to d[i+1]) get class truth$cl[i]
-          g2$Class[g2$date < d[i+1]] = truth$cl[i]
-     }
-      
-      # Convert Class to character for ggplot2
-     g2$Class = as.character(g2$Class)
-      
-      # Create end time points for rectangles
-      g2$dat2 = g2$date + rect_width
-      
-      # Debug assignments (can be removed in production)
-     g2 <<- g2
-     d <<- d
-      
+      # True state band: one rectangle per segment [B[k], B[k+1]) with state cl[k].
+      # length(cl) == length(B)-1: segments only between breakpoints (typical).
+      # length(cl) == length(B): last segment runs from last B to max(points).
+      nb <- length(truth$B)
+      nc <- length(truth$cl)
+      if (nc > nb) {
+        stop("truth$cl must have length at most length(truth$B)", call. = FALSE)
+      }
+      if (nb < 2L || nc < 1L) {
+        stop("truth requires length(B) >= 2 and length(cl) >= 1", call. = FALSE)
+      }
+      ord <- order(truth$B)
+      B_sorted <- truth$B[ord]
+      cl_sorted <- truth$cl[ord]
+      if (time_to_date) {
+        Bx <- as.Date(B_sorted, origin = origin)
+        x_right <- max(points)
+      } else {
+        Bx <- as.numeric(B_sorted)
+        x_right <- max(as.numeric(points))
+      }
+      if (nc == nb) {
+        date <- c(Bx[seq_len(nb - 1L)], Bx[nb])
+        dat2 <- c(Bx[seq_len(nb - 1L) + 1L], x_right)
+      } else {
+        date <- Bx[seq_len(nc)]
+        dat2 <- Bx[seq_len(nc) + 1L]
+      }
+      g2 <- data.frame(
+        date = date,
+        dat2 = dat2,
+        Class = as.character(cl_sorted[seq_len(nc)])
+      )
+
       # Clear separator line between estimated states (y 0--1) and real V-state band
       sep_y = 1.02
       g = g + ggplot2::geom_hline(yintercept = sep_y, linewidth = 0.8, colour = "gray30", linetype = "solid")

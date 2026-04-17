@@ -91,12 +91,19 @@ for(run_idx in 1:n_runs) {
   settings <- base_settings
   settings$length_UI <- length_UI
   
-  # Run SMC algorithm
+  # Run SMC (C++) then post-processing into RJSMC (same wall time as before one SMC() call)
   cat("  Running SMC algorithm...\n")
   start_time <- Sys.time()
-  out_SMC <- RJSMC::SMC(ts_data = ts_data,
-                        parameters = parameters,
-                        settings = settings)
+  out_cpp <- RJSMC::SMC(ts_data = ts_data,
+                      parameters = parameters,
+                      settings = settings)
+  t_after_cpp <- Sys.time()
+  elapsed_cpp <- as.numeric(difftime(t_after_cpp, start_time, units = "secs"))
+  out_SMC <- RJSMC::smc_post_processing(out_cpp,
+                                        parameters = parameters,
+                                        settings = settings,
+                                        interval_length = 0.01,
+                                        elapsed_time = elapsed_cpp)
   end_time <- Sys.time()
   elapsed_time <- as.numeric(difftime(end_time, start_time, units = "secs"))
   cat(sprintf("  SMC completed in %.2f seconds\n", elapsed_time))

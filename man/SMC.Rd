@@ -2,7 +2,7 @@
 % Please edit documentation in R/SMC.R
 \name{SMC}
 \alias{SMC}
-\title{SMC Function implementing particle filter for the model in  Gramuglia et al. 2020}
+\title{SMC: Sequential Monte Carlo (particle filter + RJMCMC)}
 \usage{
 SMC(ts_data, parameters, settings)
 }
@@ -49,28 +49,23 @@ SMC(ts_data, parameters, settings)
 }}
 }
 \value{
-The output of the function is a list with the following elements
-\itemize{
-\item n_UI - number of Update Intervals within which the SMC has been performed
-\item points_container - vector containing all the time point (i.e. discretization points) where the marginal posterior distributions for the state variables have been approximated
-\item posteriors_container_V - matrix (length(points_container) X U) containing the marginal probability mass for state variable V, evaluated at each discretization point
-\item posteriors_container_Z - matrix (length(points_container) X K) containing the marginal probability mass for state variable Z, evaluated at each discretization point
-\item posteriors_container_Q - matrix (length(points_container) X W) containing the marginal probability mass for state variable Q, evaluated at each discretization point
-\item posteriors_container_F - matrix (length(points_container) X 2) containing the marginal probability mass for state variable F, evaluated at each discretization point
-\item UI_index_vector - vector with the Update Interval number each discretization point in "points_container" belongs to
-}
+Named list from the C++ SMC routine: \code{storage_B}, \code{storage_V},
+\code{storage_Z}, \code{storage_Q}, \code{storage_F}, \code{storage_S},
+\code{storage_weight}, integer \code{n_UI}, numeric \code{UI_bounds}.
 }
 \description{
-Given an time series of time-stamps and messages this function
-run a particle filter with Reversible Jump Markov Chain Montecarlo
-steps for approximating the posterior distribution of the following
-state dynamics variables
-\itemize{
-\item Z, ruling the length of each non-empty segment
-\item Q, ruling the rate of occurrence of the messages in non-empty segments
-\item V, ruling the segment composition (in term of messages) in non-empty segments
-\item F, ruling the length of empty-segments
+Given a time series of time-stamps and messages, runs the particle filter with
+Reversible Jump Markov Chain Monte Carlo for the state dynamics in Gramuglia
+et al. (2020): Z, Q, V, and F. The observation period is split into update
+intervals of length \code{length_UI}.
 }
-The algorithm approximate these posterior distributions by splitting the observation
-time interval in sub-intervals defined by the custom parameter \code{length_UI}
+\details{
+This function returns only the raw C++ SMC output (particle states and weights
+per update interval). To build discretized marginal posteriors and an
+\code{\linkS4class{RJSMC}} object, call \code{\link{smc_post_processing}} with
+the same \code{parameters} and \code{settings} lists and your chosen
+\code{interval_length}.
+}
+\seealso{
+\code{\link{smc_post_processing}}
 }

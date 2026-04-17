@@ -22,7 +22,7 @@
 
 \item{pl}{Equal to V, Z, Q, F, or B depending on which variable to plot (B for breakpoints)}
 
-\item{truth}{A list containing 'V', a vector with true states within each segment and 'B', a vector containing the starting points for each segment}
+\item{truth}{A list with \code{B} (segment start times / change-points) and \code{cl} (true state in each segment). Use \code{length(cl) == length(B) - 1} for segments \code{[B[k],B[k+1])}, or \code{length(cl) == length(B)} to include a final segment from the last \code{B} to the plot's right edge.}
 
 \item{clnames}{A vector giving names on the different classes. If NULL (default), classes are named 0,1,...}
 
@@ -33,5 +33,5 @@
 \item{title}{Optional character string; if non-NULL, displayed as the plot title (ggplot2 \code{labs(title = ...)}).}
 }
 \description{
-Plots an area plot over time with the areas corresponding to probabilities for the different discrete events. If 'truth' is available, also a piecewise horizontal line with levels equal to the state number is displayed within the same plot (with levels described on the right horizontal axis). If 'observations' is provided, dots for each observation are displayed above the truth rectangles.
+Plots an area plot over time with the areas corresponding to probabilities for the different discrete events. If 'truth' is available, the true discrete state is drawn as a piecewise-constant band: segment \code{k} has state \code{cl[k]} on \code{[B[k], B[k+1])}. If \code{length(cl) == length(B)}, an extra segment \code{[B[length(B)], x]} is added with \code{cl[length(B)]} and \code{x} the right edge of the plot (\code{max(points)}). Observation dots, if passed, are independent of this geometry. If 'observations' is provided, dots for each observation are displayed above the truth rectangles.
 }
