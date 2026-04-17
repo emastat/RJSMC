@@ -49,10 +49,20 @@ settings$method <- "turcotte"
 out_cpp_2_5 <- RJSMC::SMC(ts_data = ts_data,
                           parameters = parameters,
                           settings = settings)
+
+
+# Use interval length
 out_SMC_2_5 <- RJSMC::smc_post_processing(out_cpp_2_5,
                                           parameters = parameters,
                                           settings = settings,
                                           interval_length = 0.01)
+
+# Use discretization points
+disc <- seq(min(ts_data$Tvec), max(ts_data$Tvec), by = 0.25)
+out_SMC_2_5 <- RJSMC::smc_post_processing(out_cpp_2_5,
+                                          parameters = parameters,
+                                          settings = settings,
+                                          discretization_points = disc)
 
 # Plot results
 
@@ -112,10 +122,19 @@ settings$method <- "turcotte"
 out_cpp_0_5 <- RJSMC::SMC(ts_data = ts_data,
                           parameters = parameters,
                           settings = settings)
+
+# Use interval length
 out_SMC_0_5 <- RJSMC::smc_post_processing(out_cpp_0_5,
                                           parameters = parameters,
                                           settings = settings,
                                           interval_length = 0.01)
+
+# Use discretization points
+disc <- seq(min(ts_data$Tvec), max(ts_data$Tvec), by = 0.25)
+out_SMC_0_5 <- RJSMC::smc_post_processing(out_cpp_0_5,
+                                          parameters = parameters,
+                                          settings = settings,
+                                          discretization_points = disc)
 
 # Plot results
 
