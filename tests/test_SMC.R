@@ -79,10 +79,14 @@ settings$length_UI <- 2
 out_cpp <- RJSMC::SMC(ts_data = ts_data,
                       parameters = parameters,
                       settings = settings)
+
+disc <- seq(min(ts_data$Tvec), max(ts_data$Tvec), by = 0.25)  # or c(...), sort(unique(...)), etc.
+
 out_SMC <- RJSMC::smc_post_processing(out_cpp,
                                       parameters = parameters,
                                       settings = settings,
-                                      interval_length = 0.1)
+                                      interval_length = 0.1,
+                                      discretization_points = disc)
 
 ## plot with observations
 plot(out_SMC, 

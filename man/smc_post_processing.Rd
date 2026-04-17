@@ -8,7 +8,8 @@ smc_post_processing(
   out_SMC_cpp,
   parameters,
   settings,
-  interval_length,
+  interval_length = NULL,
+  discretization_points = NULL,
   elapsed_time = NULL
 )
 }
@@ -21,8 +22,14 @@ smc_post_processing(
 \item{settings}{Settings list, same as passed to \code{\link{SMC}} (uses
 \code{n_particle}; optional \code{dir} for debug \code{saveRDS} dumps).}
 
-\item{interval_length}{Spacing between discretization points passed to
-\code{\link{get_results}}.}
+\item{interval_length}{Spacing for a regular grid: pass a positive number and
+leave \code{discretization_points} as \code{NULL}. Mutually exclusive with
+\code{discretization_points}.}
+
+\item{discretization_points}{Numeric vector of discretization times (same scale
+as \code{UI_bounds}); leave \code{interval_length} as \code{NULL}. Per update
+interval \code{[SP, EP)}, values with \code{SP <= t < EP} are passed to
+\code{\link{get_results}}. Mutually exclusive with \code{interval_length}.}
 
 \item{elapsed_time}{Optional numeric seconds for the SMC C++ run; if
 \code{NULL}, slot \code{elapsed_time} is set to \code{NA_real_}.}
@@ -32,8 +39,9 @@ Object of class \code{\linkS4class{RJSMC}}.
 }
 \description{
 Extracts marginal posteriors at a chosen time discretization from the list
-returned by \code{\link{SMC}}. Use a different \code{interval_length} without
-re-running the particle filter.
+returned by \code{\link{SMC}} without re-running the particle filter. Supply
+either \code{interval_length} (regular grid) or \code{discretization_points}
+(custom grid), not both.
 }
 \seealso{
 \code{\link{SMC}}

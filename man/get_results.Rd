@@ -4,9 +4,10 @@
 \alias{get_results}
 \title{Function for extrapolating the results
 In this function the approximated posterior distributions are extracted.
-The observational time interval is discretized by regularly-spaced time points
-defined through the parameter \code{interval_length}. For each time point
-the posterior distribution of the dynamic states V, Z, Q and F is computed.}
+The observational time interval is discretized either by regularly-spaced time
+points (\code{interval_length}) or by an explicit vector \code{discretization_points}.
+For each discretization time the posterior distribution of the dynamic states
+V, Z, Q and F is computed.}
 \usage{
 get_results(
   start_point,
@@ -21,7 +22,8 @@ get_results(
   num_states_V,
   num_states_Z,
   num_states_Q,
-  num_states_F
+  num_states_F,
+  discretization_points = NULL
 )
 }
 \arguments{
@@ -31,7 +33,9 @@ get_results(
 
 \item{num_particles}{the number of particles generated in SMC}
 
-\item{interval_length}{the chosen length for spacing each discretization time point}
+\item{interval_length}{spacing between discretization points when
+\code{discretization_points} is \code{NULL}; ignored when \code{discretization_points}
+is supplied (breakpoint bins use consecutive grid points and \code{end_point}).}
 
 \item{breakpoints_list}{list with inferred breakpoints inside the update interval, for all particles}
 
@@ -50,11 +54,17 @@ get_results(
 \item{num_states_Q}{number of states for Q}
 
 \item{num_states_F}{number of states for F}
+
+\item{discretization_points}{Optional numeric vector of discretization times in
+\code{[start_point, end_point)} (strict upper bound). When non-\code{NULL},
+these replace the regular grid from \code{seq}; must be strictly increasing
+after sorting and duplicate removal.}
 }
 \description{
 Function for extrapolating the results
 In this function the approximated posterior distributions are extracted.
-The observational time interval is discretized by regularly-spaced time points
-defined through the parameter \code{interval_length}. For each time point
-the posterior distribution of the dynamic states V, Z, Q and F is computed.
+The observational time interval is discretized either by regularly-spaced time
+points (\code{interval_length}) or by an explicit vector \code{discretization_points}.
+For each discretization time the posterior distribution of the dynamic states
+V, Z, Q and F is computed.
 }
