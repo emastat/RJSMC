@@ -93,12 +93,20 @@ for(run_idx in 1:n_runs) {
   settings$n_ite      <- n_ite_values[run_idx]
   settings$burn_in    <- burn_in_values[run_idx]
 
-  # Run SMC algorithm
+  # Run SMC (C++) then post-processing into RJSMC
   cat("  Running SMC algorithm...\n")
-  out_SMC <- RJSMC::SMC(ts_data = ts_data,
+  start_time <- Sys.time()
+  out_cpp <- RJSMC::SMC(ts_data = ts_data,
                         parameters = parameters,
                         settings = settings)
-  elapsed_time <- out_SMC@elapsed_time  # SMC C++ runtime only (excludes post-processing)
+  end_time <- Sys.time()
+  elapsed_cpp <- as.numeric(difftime(end_time, start_time, units = "secs"))
+  out_SMC <- RJSMC::smc_post_processing(out_cpp,
+                                        parameters = parameters,
+                                        settings = settings,
+                                        interval_length = 0.01,
+                                        elapsed_time = elapsed_cpp)
+  elapsed_time <- out_SMC@elapsed_time
   cat(sprintf("  SMC completed in %.2f seconds\n", elapsed_time))
 
   # Run breakpoint_cx evaluation

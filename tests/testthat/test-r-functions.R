@@ -81,6 +81,38 @@ test_that("get_results function works correctly", {
   expect_equal(ncol(result$state_container_V), num_particles)
 })
 
+test_that("get_results custom discretization_points matches regular seq grid", {
+  start_point <- 0.0
+  end_point <- 10.0
+  num_particles <- 3
+  interval_length <- 0.1
+  breakpoints_list <- lapply(seq_len(num_particles), function(i) {
+    c(start_point, 5.0, end_point)
+  })
+  V_state_list <- lapply(seq_len(num_particles), function(i) c(1, 2))
+  Z_state_list <- lapply(seq_len(num_particles), function(i) c(1, 1))
+  Q_state_list <- lapply(seq_len(num_particles), function(i) c(1, 2))
+  F_state_list <- lapply(seq_len(num_particles), function(i) c(0, 0))
+
+  ref <- get_results(
+    start_point, end_point, num_particles, interval_length,
+    breakpoints_list, V_state_list, Z_state_list,
+    Q_state_list, F_state_list,
+    num_states_V = 3, num_states_Z = 2, num_states_Q = 2, num_states_F = 2
+  )
+  cust <- get_results(
+    start_point, end_point, num_particles, interval_length = 999,
+    breakpoints_list, V_state_list, Z_state_list,
+    Q_state_list, F_state_list,
+    num_states_V = 3, num_states_Z = 2, num_states_Q = 2, num_states_F = 2,
+    discretization_points = ref$discr_points
+  )
+  expect_equal(cust$discr_points, ref$discr_points)
+  expect_equal(cust$num_discr_intervals, ref$num_discr_intervals)
+  expect_equal(cust$state_container_V, ref$state_container_V)
+  expect_equal(cust$state_container_B, ref$state_container_B)
+})
+
 test_that("get_results handles unsorted breakpoints", {
   start_point <- 0.0
   end_point <- 10.0

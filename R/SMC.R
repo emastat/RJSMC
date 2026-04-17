@@ -1,19 +1,17 @@
-#' SMC Function implementing particle filter for the model in  Gramuglia et al. 2020 
+#' SMC: Sequential Monte Carlo (particle filter + RJMCMC)
 #'
-#' Given an time series of time-stamps and messages this function
-#' run a particle filter with Reversible Jump Markov Chain Montecarlo
-#' steps for approximating the posterior distribution of the following
-#' state dynamics variables
-#'  \itemize{
-#'   \item Z, ruling the length of each non-empty segment
-#'   \item Q, ruling the rate of occurrence of the messages in non-empty segments
-#'   \item V, ruling the segment composition (in term of messages) in non-empty segments
-#'   \item F, ruling the length of empty-segments
-#'   }
-#' The algorithm approximate these posterior distributions by splitting the observation 
-#' time interval in sub-intervals defined by the custom parameter \code{length_UI}
+#' Given a time series of time-stamps and messages, runs the particle filter with
+#' Reversible Jump Markov Chain Monte Carlo for the state dynamics in Gramuglia
+#' et al. (2020): Z, Q, V, and F. The observation period is split into update
+#' intervals of length \code{length_UI}.
 #'
-#' @param  ts_data list with data:
+#' This function returns only the raw C++ SMC output (particle states and weights
+#' per update interval). To build discretized marginal posteriors and an
+#' \code{\linkS4class{RJSMC}} object, call \code{\link{smc_post_processing}} with
+#' the same \code{parameters} and \code{settings} lists and your chosen
+#' \code{interval_length}.
+#'
+#' @param ts_data list with data:
 #' \itemize{
 #'   \item {Yvec}{IntegerVector  with the observed messages}
 #'   \item {Tvec}{NumericVector with  the  observed time-stamps}
@@ -23,8 +21,8 @@
 #'    \item {U}{Number of levels of variable V}
 #'    \item {W}{Number of levels of variable Q}
 #'    \item {K}{Number of levels of variable Z}
-#'    \item {lambdamat}{matrix (U * num_logs) hosting the  probability mass for the messages in each V state} 
-#'    \item {keyvec}{Shape parameters ruling the length of non-empty segments in different levels of Z state} 
+#'    \item {lambdamat}{matrix (U * num_logs) hosting the  probability mass for the messages in each V state}
+#'    \item {keyvec}{Shape parameters ruling the length of non-empty segments in different levels of Z state}
 #'    \item {etavec}{Mean parameters ruling the length of non-empty segments in different levels of Z state}
 #'    \item {key0vec}{Shape parameters ruling the length of empty segments in different levels of F state}
 #'    \item {eta0vec}{Mean parameters ruling the length of empty segments in different levels of F state}
@@ -51,16 +49,10 @@
 #'    \item {method}{(string}) set it to "turcotte" for applying the Turcotte method or to "waste_free" for applying the Chopin method for importance density approximation)
 #'    \item {recycled_particles}{(int) number of particles to sample when performing the waste_free method. Default is 2}
 #' }
-#' @return The output of the function is a list with the following elements
-#' \itemize{
-#'  \item n_UI - number of Update Intervals within which the SMC has been performed
-#'  \item points_container - vector containing all the time point (i.e. discretization points) where the marginal posterior distributions for the state variables have been approximated
-#'  \item posteriors_container_V - matrix (length(points_container) X U) containing the marginal probability mass for state variable V, evaluated at each discretization point
-#'  \item posteriors_container_Z - matrix (length(points_container) X K) containing the marginal probability mass for state variable Z, evaluated at each discretization point
-#'  \item posteriors_container_Q - matrix (length(points_container) X W) containing the marginal probability mass for state variable Q, evaluated at each discretization point
-#'  \item posteriors_container_F - matrix (length(points_container) X 2) containing the marginal probability mass for state variable F, evaluated at each discretization point
-#'   \item UI_index_vector - vector with the Update Interval number each discretization point in "points_container" belongs to
-#'  }
+#' @return Named list from the C++ SMC routine: \code{storage_B}, \code{storage_V},
+#'   \code{storage_Z}, \code{storage_Q}, \code{storage_F}, \code{storage_S},
+#'   \code{storage_weight}, integer \code{n_UI}, numeric \code{UI_bounds}.
+#' @seealso \code{\link{smc_post_processing}}
 #' @export
 
 SMC = function( ts_data, 
@@ -103,9 +95,6 @@ SMC = function( ts_data,
   # run the Sequential Monte Carlo algorithm for the  whole
   # observation period
   # (from first to last observed time-stamp of the dataset)
-
-
-  smc_start_time <- proc.time()["elapsed"]
 
   if(method == "turcotte"){
 
@@ -169,151 +158,5 @@ SMC = function( ts_data,
 
   }
 
-
-  elapsed_time <- as.numeric(proc.time()["elapsed"] - smc_start_time)
-
-  print( "SMC completed: extracting results")
-
-  # from the output of the SMC extract the marginal posterior
-  # distributions for
-  # the states V, Z, Q, F computed at some fixed discretization
-  # point along the
-  # observation period. As the SMC computed the approximated
-  # posterior distribution
-  # one update interval at a time so the results will be presented
-
-  #number of Update intervals
-  n_UI <- out_SMC_cpp$n_UI
-
-  #vector  with bounds between the Update Intervals
-  UI_bounds <- out_SMC_cpp$UI_bounds
-
-
-  posteriors_container_V <- NULL
-  posteriors_container_Z <- NULL
-  posteriors_container_Q <- NULL
-  posteriors_container_F <- NULL
-  posteriors_container_B <- NULL
-  points_container <- NULL
-  UI_index_vector <- NULL
-
-  non_empty_UI <- setdiff(
-    1:(length(UI_bounds)-1),
-    which(sapply(out_SMC_cpp$storage_B, is.null
-                  )
-          )
-    )
-
-  non_empty_UI_bounds = list()
-  SP = UI_bounds[1]
-  for(i in non_empty_UI){
-    EP = UI_bounds[i+1]
-    non_empty_UI_bounds = c(non_empty_UI_bounds,list(c(SP,EP)))
-    SP = EP
-  }
-
-  for(i in 1:length(non_empty_UI)){
-
-    non_empty_idx = non_empty_UI[[i]]
-
-    sum_na = sum(is.na(unlist(out_SMC_cpp$storage_weight[[non_empty_idx]])))
-
-    if(sum_na>0){stop("SMC.R-->there are NA, checkout")}
-
-    # Save debug data only if settings$dir is provided
-    # These are temporary debugging files and should be optional
-    if(!is.null(settings$dir) && settings$dir != ""){
-      saveRDS(UI_bounds, file =paste0(settings$dir,"UI_bounds.rds"))
-      saveRDS(n_particle, file =paste0(settings$dir,"n_particle.rds"))
-      saveRDS(out_SMC_cpp$storage_B, file =paste0(settings$dir,"out_SMC_cpp$storage_B.rds"))
-      saveRDS(out_SMC_cpp$storage_V, file =paste0(settings$dir,"out_SMC_cpp$storage_V.rds"))
-      saveRDS(out_SMC_cpp$storage_Z, file =paste0(settings$dir,"out_SMC_cpp$storage_Z.rds"))
-      saveRDS(out_SMC_cpp$storage_Q, file =paste0(settings$dir,"out_SMC_cpp$storage_Q.rds"))
-      saveRDS(out_SMC_cpp$storage_F, file =paste0(settings$dir,"out_SMC_cpp$storage_F.rds"))
-      saveRDS(U, file =paste0(settings$dir,"U.rds"))
-      saveRDS(W, file =paste0(settings$dir,"W.rds"))
-      saveRDS(K, file =paste0(settings$dir,"K.rds"))
-    }
-
-    results_UI <- get_results(non_empty_UI_bounds[[i]][1],
-                              non_empty_UI_bounds[[i]][2],
-                              n_particle,
-                              0.01,
-                              out_SMC_cpp$storage_B[[non_empty_idx]],
-                              out_SMC_cpp$storage_V[[non_empty_idx]],
-                              out_SMC_cpp$storage_Z[[non_empty_idx]],
-                              out_SMC_cpp$storage_Q[[non_empty_idx]],
-                              out_SMC_cpp$storage_F[[non_empty_idx]],
-                              U,
-                              W,
-                              K,
-                              2)
-
-
-    temp_container_V <- compute_posterior(results_UI$num_discr_intervals,
-                                          n_particle,
-                                          results_UI$state_container_V,
-                                          U+1,
-                                          unlist(out_SMC_cpp$storage_weight[[non_empty_idx]]))
-
-    temp_container_Z <- compute_posterior(results_UI$num_discr_intervals,
-                                          n_particle,
-                                          results_UI$state_container_Z,
-                                          K+1,
-                                          unlist(out_SMC_cpp$storage_weight[[non_empty_idx]]))
-
-    temp_container_Q <- compute_posterior(results_UI$num_discr_intervals,
-                                            n_particle,
-                                            results_UI$state_container_Q,
-                                            W+1,
-                                            unlist(out_SMC_cpp$storage_weight[[non_empty_idx]]))
-
-    temp_container_F <- compute_posterior(results_UI$num_discr_intervals,
-                                            n_particle,
-                                            results_UI$state_container_F,
-                                            2+1,
-                                            unlist(out_SMC_cpp$storage_weight[[non_empty_idx]]))
-
-    temp_container_B <- compute_posterior_breakpoint(results_UI$num_discr_intervals,
-                                                    n_particle,
-                                                    results_UI$state_container_B,
-                                                    unlist(out_SMC_cpp$storage_weight[[non_empty_idx]]))
-
-
-
-
-
-    posteriors_container_V <- rbind(posteriors_container_V,temp_container_V)
-
-    posteriors_container_Z <- rbind(posteriors_container_Z,temp_container_Z)
-
-    posteriors_container_Q <- rbind(posteriors_container_Q,temp_container_Q)
-
-    posteriors_container_F <- rbind(posteriors_container_F,temp_container_F)
-
-    posteriors_container_B <- c(posteriors_container_B,temp_container_B)
-
-
-    points_container <- c(points_container, results_UI$discr_points)
-
-    UI_index_vector <- c(UI_index_vector, rep(non_empty_idx, length(results_UI$discr_points)))
-
-  }
-
-
-return(new("RJSMC",n_UI = n_UI,
-            points_container = points_container,
-            posteriors_container_V = posteriors_container_V,
-            posteriors_container_Z = posteriors_container_Z,
-            posteriors_container_Q = posteriors_container_Q,
-            posteriors_container_F = posteriors_container_F,
-            posteriors_container_B = posteriors_container_B,
-            storage_B = out_SMC_cpp$storage_B,
-            storage_V = out_SMC_cpp$storage_V,
-            storage_weight = out_SMC_cpp$storage_weight,
-            UI_index_vector = UI_index_vector,
-            UI_bounds = UI_bounds,
-            elapsed_time = elapsed_time
-            ))
-
+  out_SMC_cpp
 }
