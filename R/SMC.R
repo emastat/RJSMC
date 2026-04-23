@@ -12,42 +12,42 @@
 #' \code{interval_length}.
 #'
 #' @param ts_data list with data:
-#' \itemize{
-#'   \item {Yvec}{IntegerVector  with the observed messages}
-#'   \item {Tvec}{NumericVector with  the  observed time-stamps}
+#' \describe{
+#'   \item{Yvec}{IntegerVector  with the observed messages}
+#'   \item{Tvec}{NumericVector with  the  observed time-stamps}
 #' }
 #' @param parameters list with model parameters:
-#' \itemize{
-#'    \item {U}{Number of levels of variable V}
-#'    \item {W}{Number of levels of variable Q}
-#'    \item {K}{Number of levels of variable Z}
-#'    \item {lambdamat}{matrix (U * num_logs) hosting the  probability mass for the messages in each V state}
-#'    \item {keyvec}{Shape parameters ruling the length of non-empty segments in different levels of Z state}
-#'    \item {etavec}{Mean parameters ruling the length of non-empty segments in different levels of Z state}
-#'    \item {key0vec}{Shape parameters ruling the length of empty segments in different levels of F state}
-#'    \item {eta0vec}{Mean parameters ruling the length of empty segments in different levels of F state}
-#'    \item {alphavec}{Shape parameters ruling the rate of occurrence in different levels of Z state (non-empty segments)}
-#'    \item {muvec}{Mean parameters ruling the rate of occurrence in different levels of Z state}
-#'    \item {probvec_V}{probability mass for the V state}
-#'    \item {probvec_Z}{probability mass for the Z state}
-#'    \item {probvec_Q}{probability mass for the Q state}
-#'    \item {probvec_F}{probability mass for the F state}
-#'    \item {P0}{(const double&) Probability to observe an empty segment after a non-empty one}
-#'    \item {minimum_n}{minimum number of observations that must be observed in a non-empty segment}
+#' \describe{
+#'    \item{U}{Number of levels of variable V}
+#'    \item{W}{Number of levels of variable Q}
+#'    \item{K}{Number of levels of variable Z}
+#'    \item{lambdamat}{matrix (U * num_logs) hosting the  probability mass for the messages in each V state}
+#'    \item{keyvec}{Shape parameters ruling the length of non-empty segments in different levels of Z state}
+#'    \item{etavec}{Mean parameters ruling the length of non-empty segments in different levels of Z state}
+#'    \item{key0vec}{Shape parameters ruling the length of empty segments in different levels of F state}
+#'    \item{eta0vec}{Mean parameters ruling the length of empty segments in different levels of F state}
+#'    \item{alphavec}{Shape parameters ruling the rate of occurrence in different levels of Z state (non-empty segments)}
+#'    \item{muvec}{Mean parameters ruling the rate of occurrence in different levels of Z state}
+#'    \item{probvec_V}{probability mass for the V state}
+#'    \item{probvec_Z}{probability mass for the Z state}
+#'    \item{probvec_Q}{probability mass for the Q state}
+#'    \item{probvec_F}{probability mass for the F state}
+#'    \item{P0}{(const double&) Probability to observe an empty segment after a non-empty one}
+#'    \item{minimum_n}{minimum number of observations that must be observed in a non-empty segment}
 #' }
 #' @param settings list with simulation settings parameters:
-#' \itemize{
-#'    \item {length_UI}{length of the each update interval}
-#'    \item {n_particle}{number of particles to generate}
-#'    \item {num_logs}{Total number of different messages that can be observed}
-#'    \item {Jss1}{(const double&) Probability to propose a jump forward}
-#'    \item {Js1s}{(const double&) Probability to propose a jump backward}
-#'    \item {Smax}{maximum number of segments allowed inside the update interval}
-#'    \item {n_ite}{(const int&), number of iteration to be performed in the RJMCMC}
-#'    \item {burn_in}{(const int&) Number of iterations used as burn_in period.}
-#'    \item {thinning}{(const int&) One every "thinning" iterations will be stored by the RJMCMC}
-#'    \item {method}{(string}) set it to "turcotte" for applying the Turcotte method or to "waste_free" for applying the Chopin method for importance density approximation)
-#'    \item {recycled_particles}{(int) number of particles to sample when performing the waste_free method. Default is 2}
+#' \describe{
+#'    \item{length_UI}{length of the each update interval}
+#'    \item{n_particle}{number of particles to generate}
+#'    \item{num_logs}{Total number of different messages that can be observed}
+#'    \item{Jss1}{(const double&) Probability to propose a jump forward}
+#'    \item{Js1s}{(const double&) Probability to propose a jump backward}
+#'    \item{Smax}{maximum number of segments allowed inside the update interval}
+#'    \item{n_ite}{(const int&), number of iteration to be performed in the RJMCMC}
+#'    \item{burn_in}{(const int&) Number of iterations used as burn_in period.}
+#'    \item{thinning}{(const int&) One every "thinning" iterations will be stored by the RJMCMC}
+#'    \item{method}{(string}) set it to "turcotte" for applying the Turcotte method or to "waste_free" for applying the Chopin method for importance density approximation)
+#'    \item{recycled_particles}{(int) number of particles to sample when performing the waste_free method. Default is 2}
 #' }
 #' @return Named list from the C++ SMC routine: \code{storage_B}, \code{storage_V},
 #'   \code{storage_Z}, \code{storage_Q}, \code{storage_F}, \code{storage_S},
@@ -55,11 +55,11 @@
 #' @seealso \code{\link{smc_post_processing}}
 #' @export
 
-SMC = function( ts_data, 
+SMC = function( ts_data,
                parameters,
                settings){
 
-  Yvec <- ts_data$Yvec 
+  Yvec <- ts_data$Yvec
   Tvec <- ts_data$Tvec
 
   length_UI <- settings$length_UI
