@@ -1,4 +1,4 @@
-devtools::load_all()
+#devtools::load_all()
 library(mclust)
 library(fitdistrplus)
 
@@ -59,7 +59,7 @@ out_SMC_2_5 <- RJSMC::smc_post_processing(out_cpp_2_5,
 
 # Use discretization points
 disc <- seq(min(ts_data$Tvec), max(ts_data$Tvec), by = 0.25)
-out_SMC_2_5 <- RJSMC::smc_post_processing(out_cpp_2_5,
+out_SMC_2_5_disc <- RJSMC::smc_post_processing(out_cpp_2_5,
                                           parameters = parameters,
                                           settings = settings,
                                           discretization_points = disc)
@@ -77,6 +77,15 @@ plot(
 
 dev.off()
 
+png("real_data_state_reconstruction_2_5_disc.png", width = 1600, height = 900, res = 200)
+
+plot(
+  out_SMC_2_5_disc,
+  observations=list(Tvec=ts_data$Tvec),
+  time_to_date=FALSE,
+  title= "State reconstruction - Update interval 2.5 hours")
+
+dev.off()
 
 ########################################################
 
@@ -131,10 +140,40 @@ out_SMC_0_5 <- RJSMC::smc_post_processing(out_cpp_0_5,
 
 # Use discretization points
 disc <- seq(min(ts_data$Tvec), max(ts_data$Tvec), by = 0.25)
-out_SMC_0_5 <- RJSMC::smc_post_processing(out_cpp_0_5,
+out_SMC_0_5_disc <- RJSMC::smc_post_processing(out_cpp_0_5,
                                           parameters = parameters,
                                           settings = settings,
                                           discretization_points = disc)
+
+
+
+# Prepare settings
+settings <- list()
+settings$num_logs <- real_data$num_logs
+settings$length_UI <- 2000
+settings$n_particle <- 100000
+settings$Jss1 <- 1/3
+settings$Js1s <- 1/3
+settings$Smax <- 500
+settings$n_ite <- 1000000
+settings$burn_in <- 40000
+settings$thinning <- 5
+settings$method <- "turcotte"
+
+out_cpp_full <- RJSMC::SMC(ts_data = ts_data,
+                          parameters = parameters,
+                          settings = settings)
+
+disc <- seq(min(ts_data$Tvec), max(ts_data$Tvec), by = 0.25)
+out_SMC_full_disc <- RJSMC::smc_post_processing(out_cpp_full,
+                                               parameters = parameters,
+                                               settings = settings,
+                                               discretization_points = disc)
+plot(
+  out_SMC_full_disc,
+  observations=list(Tvec=ts_data$Tvec),
+  time_to_date=FALSE,
+  title= "State reconstruction - Update interval 0.5 hours")
 
 # Plot results
 
@@ -149,16 +188,27 @@ plot(
 
 dev.off()
 
+png("real_data_state_reconstruction_0_5_disc.png", width = 1600, height = 900, res = 200)
+
+plot(
+  out_SMC_0_5_disc,
+  observations=list(Tvec=ts_data$Tvec),
+  time_to_date=FALSE,
+  title= "State reconstruction - Update interval 0.5 hours")
+
+dev.off()
+
 
 
 ########################################################
 
 ## COMP
 
+png("real_data_state_reconstruction_cmp_0_5_2_5_disc.png", width = 1600, height = 900, res = 200)
 
 cmp <- compare_smc_runs_js(
-  obj_a = out_SMC_2_5,
-  obj_b = out_SMC_0_5,
+  obj_a = out_SMC_2_5_disc,
+  obj_b = out_SMC_0_5_disc,
   Tvec = ts_data$Tvec,
   U = real_data$U,
   plot = TRUE,
@@ -166,3 +216,4 @@ cmp <- compare_smc_runs_js(
   plot_width = 7,
   plot_height = 4.5
 )
+dev.off()
